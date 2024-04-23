@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# easy-rs
+# Проверим установлен easy-rs в сситему
 if ! dpkg -s easy-rsa &> /dev/null; then
     echo "Пакет Easy-RSA не установлен. Начинаем установку..."
     
@@ -18,4 +18,88 @@ if ! dpkg -s easy-rsa &> /dev/null; then
 else
     echo "Пакет Easy-RSA уже установлен."
 fi
+
+# Проверяем, существует ли папка easy-rsa в домашней директории пользователя
+if [ -d "~/easy-rsa" ]; then
+    echo "Папка easy-rsa уже существует."
+else
+    # Создаем папку easy-rsa
+    mkdir ~/easy-rsa
+fi
+
+# Переходим в папку easy-rsa
+cd easy-rsa || exit 1
+
+#создаем символические ссылки в нашу созданную директорию
+if ! ln -s /usr/share/easy-rsa/* ~/easy-rsa/; then  
+     echo "Символические ссылки не созданы"
+     echo "Проверте наличие директории /usr/share/easy-rsa"
+fi
+
+# Переходим в папку easy-rsa
+cd ~/easy-rsa || exit 1
+
+#ограничим доступ к папке 
+chmod 700 ~/easy-rsa
+
+# Запустим инициализацию PKI
+if ! ./easyrsa init-pki ; then
+	echo "Ошибка инициализации. Проверте наличие скрипата easyrsa"
+fi
+
+# изменим файл vars заполним своими значениями
+#
+cp vars.example vars
+# Путь к файлу vars
+VARS_FILE="~/vars"
+
+# Заменяемые значения
+NEW_COUNTRY="RU"
+NEW_PROVINCE="Moscow"
+NEW_CITY="Moscow"
+NEW_ORG="EQ"
+NEW_EMAIL="admin@example.com"
+NEW_OU="LLC"
+NEW_ALGO="ec"
+NEW_DIGEST="sha512"
+
+# Проверяем, существует ли файл vars
+if [ ! -f "$VARS_FILE" ]; then
+    echo "Файл $VARS_FILE не найден."
+    exit 1
+fi
+
+# Заменяем строки в файле vars
+sed -i "s/^#set_var EASYRSA_REQ_COUNTRY.*/set_var EASYRSA_REQ_COUNTRY    \"$NEW_COUNTRY\"/" "$VARS_FILE"
+sed -i "s/^#set_var EASYRSA_REQ_PROVINCE.*/set_var EASYRSA_REQ_PROVINCE    \"$NEW_PROVINCE\"/" "$VARS_FILE"
+sed -i "s/^#set_var EASYRSA_REQ_CITY.*/set_var EASYRSA_REQ_CITY    \"$NEW_CITY\"/" "$VARS_FILE"
+sed -i "s/^#set_var EASYRSA_REQ_ORG.*/set_var EASYRSA_REQ_ORG    \"$NEW_ORG\"/" "$VARS_FILE"
+sed -i "s/^#set_var EASYRSA_REQ_EMAIL.*/set_var EASYRSA_REQ_EMAIL    \"$NEW_EMAIL\"/" "$VARS_FILE"
+sed -i "s/^#set_var EASYRSA_REQ_OU.*/set_var EASYRSA_REQ_OU    \"$NEW_OU\"/" "$VARS_FILE"
+sed -i "s/^#set_var EASYRSA_ALGO.*/set_var EASYRSA_ALGO    \"$NEW_ALGO\"/" "$VARS_FILE"
+sed -i "s/^#set_var EASYRSA_DIGEST.*/set_var EASYRSA_DIGEST    \"$NEW_DIGEST\"/" "$VARS_FILE"
+
+# запускаем создание СА
+./easyrsa build-ca
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
