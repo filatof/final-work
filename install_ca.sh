@@ -1,5 +1,9 @@
 #!/bin/bash
 
+USERNAME="$SUDO_USER"
+HOME_DIR=$(eval echo ~"$USERNAME")
+TARGET_DIR="$HOME_DIR/easy-rsa"
+
 # Проверим установлен easy-rs в сситему
 if ! dpkg -s easy-rsa &> /dev/null; then
     echo "Пакет Easy-RSA не установлен. Начинаем установку..."
@@ -19,16 +23,15 @@ else
     echo "Пакет Easy-RSA уже установлен."
 fi
 
-# Проверяем, существует ли папка easy-rsa в домашней директории пользователя
-if [ -d "~/easy-rsa" ]; then
-    echo "Папка easy-rsa уже существует."
-else
-    # Создаем папку easy-rsa
-    mkdir ~/easy-rsa
-fi
 
-# Переходим в папку easy-rsa
-cd easy-rsa || exit 1
+# Создаем директорию от имени этого пользователя
+# Проверяем, существует ли целевая директория
+if [ -d "$TARGET_DIR" ]; then
+    echo "Директория $TARGET_DIR уже существует."
+else
+    # Создаем директорию
+    mkdir -p "$TARGET_DIR"
+fi
 
 #создаем символические ссылки в нашу созданную директорию
 if ! ln -s /usr/share/easy-rsa/* ~/easy-rsa/; then  
