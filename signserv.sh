@@ -1,4 +1,12 @@
 #!/bin/bash
+#
+#--------------------------------------------------------------------
+# Script to signing sertificate CA
+#
+# Developed by Ivan Filatoff
+#
+# dep install jd 
+#--------------------------------------------------------------------
 
 # Путь к вашему запросу на подписание сертификата (CSR)
 csr_path="/home/fill/practice-csr/vpn-server.req"
