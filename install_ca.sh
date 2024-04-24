@@ -33,15 +33,15 @@ if ! dpkg -s easy-rsa &> /dev/null; then
         exit 1
     fi
 else
-    echo "Пакет Easy-RSA уже установлен."
+    echo "Пакет Easy-RSA уже установлен"
 fi
 
 
 # Создаем директорию от имени этого пользователя
 # Проверяем, существует ли СА
-if [ -d "$TARGET_DIR" ] && [ -d "$TARDET_DIR/pki" ] && [ -f "$TARGET_DIR/pki/ca.crt" ]; then
-    	echo "Центр сертификации уже создан"
-     	exit 0
+if [ -d $TARGET_DIR ] && [ -d "$TARGET_DIR/pki" ] && [ -f "$TARGET_DIR/pki/ca.crt" ] ; then
+        echo "Центр сертификации уже создан"
+        exit 0
 else
     # СА не существует
     # Создаем директорию от пользователя которым запущено sudo
