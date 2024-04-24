@@ -41,22 +41,30 @@ fi
 # Проверяем, существует ли целевая директория
 if [ -d "$TARGET_DIR" ]; then
     echo "Директория $TARGET_DIR уже существует."
+    # проверим существование СА
+    if [ -d "$TARDET_DIR/pki" && -f "$TARGET_DIR/pki/ca.crt" ]; then
+    	echo "Центр сертификации уже создан"
+     	exit 0
+    fi
 else
 	# Создаем директорию от пользователя которым запущено sudo
     sudo -u "$USERNAME" mkdir -p "$TARGET_DIR"
-fi
-
-#создаем символические ссылки в нашу созданную директорию
-if ! sudo -u "$USERNAME" ln -s /usr/share/easy-rsa/* "$TARGET_DIR"; then  
-     echo "Символические ссылки не созданы"
-     echo "Проверте наличие директории /usr/share/easy-rsa"
+    
+    #ограничим доступ к папке 
+    sudo -u "$USERNAME" chmod 700 "$TARGET_DIR"
+    
+    #создаем символические ссылки в нашу созданную директорию
+    if ! sudo -u "$USERNAME" ln -s /usr/share/easy-rsa/* "$TARGET_DIR"; then  
+     	 echo "Символические ссылки не созданы"
+         echo "Проверте наличие директории /usr/share/easy-rsa"
+	 exit 1
+    fi
 fi
 
 # Переходим в папку easy-rsa
 cd "$TARGET_DIR" || exit 1
 
-#ограничим доступ к папке 
-sudo -u "$USERNAME" chmod 700 "$TARGET_DIR"
+
 
 # Запустим инициализацию PKI
 if ! sudo -u "$USERNAME" ./easyrsa init-pki ; then
