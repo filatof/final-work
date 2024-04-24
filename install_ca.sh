@@ -34,16 +34,16 @@ else
 fi
 
 #создаем символические ссылки в нашу созданную директорию
-if ! ln -s /usr/share/easy-rsa/* ~/easy-rsa/; then  
+if ! ln -s /usr/share/easy-rsa/* "$TARGET_DIR"; then  
      echo "Символические ссылки не созданы"
      echo "Проверте наличие директории /usr/share/easy-rsa"
 fi
 
 # Переходим в папку easy-rsa
-cd ~/easy-rsa || exit 1
+cd "$TARGET_DIR" || exit 1
 
 #ограничим доступ к папке 
-chmod 700 ~/easy-rsa
+chmod 700 "$TARGET_DIR"
 
 # Запустим инициализацию PKI
 if ! ./easyrsa init-pki ; then
@@ -54,7 +54,7 @@ fi
 #
 cp vars.example vars
 # Путь к файлу vars
-VARS_FILE="~/vars"
+VARS_FILE="$TARGET_DIR/vars"
 
 # Заменяемые значения
 NEW_COUNTRY="RU"
@@ -83,26 +83,7 @@ sed -i "s/^#set_var EASYRSA_ALGO.*/set_var EASYRSA_ALGO    \"$NEW_ALGO\"/" "$VAR
 sed -i "s/^#set_var EASYRSA_DIGEST.*/set_var EASYRSA_DIGEST    \"$NEW_DIGEST\"/" "$VARS_FILE"
 
 # запускаем создание СА
-./easyrsa build-ca
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+if ! ./easyrsa build-ca; then
+	echo "Ошибка при создании CA"
+fi
 
