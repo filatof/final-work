@@ -108,7 +108,8 @@ if ! sudo -u "$USERNAME" ./easyrsa build-ca; then
 fi
 
 echo "Удостоверяющий центр успешно создан"
-echo "Приватный ключ расположен $TARGET_DIR/pki/private/ca.key"
-echo "Публичный сертификат расположен $TARGET_DIR/pki/ca.crt"
+echo 
+echo "Приватный ключ расположен: $TARGET_DIR/pki/private/ca.key"
+echo "Публичный сертификат расположен: $TARGET_DIR/pki/ca.crt"
 exit 0
 
