@@ -1,8 +1,16 @@
 #!/bin/bash
 
 USERNAME="$SUDO_USER"
-HOME_DIR=$(eval echo ~"$USERNAME")
-TARGET_DIR="$HOME_DIR/easy-rsa"
+
+# Если имя пользователя не определено, выходим с ошибкой
+if [ -z "$USERNAME" ]; then
+    echo "Ошибка: не удалось определить имя пользователя."
+    exit 1
+fi
+
+# Директория, где будет располагаться Easy-RSA
+TARGET_DIR="/home/$USERNAME/easy-rsa"
+
 
 # Проверим установлен easy-rs в сситему
 if ! dpkg -s easy-rsa &> /dev/null; then
@@ -29,12 +37,12 @@ fi
 if [ -d "$TARGET_DIR" ]; then
     echo "Директория $TARGET_DIR уже существует."
 else
-    # Создаем директорию
-    mkdir -p "$TARGET_DIR"
+	# Создаем директорию от пользователя которым запущено sudo
+    sudo -u "$USERNAME" mkdir -p "$TARGET_DIR"
 fi
 
 #создаем символические ссылки в нашу созданную директорию
-if ! ln -s /usr/share/easy-rsa/* "$TARGET_DIR"; then  
+if ! sudo -u "$USERNAME" ln -s /usr/share/easy-rsa/* "$TARGET_DIR"; then  
      echo "Символические ссылки не созданы"
      echo "Проверте наличие директории /usr/share/easy-rsa"
 fi
@@ -43,10 +51,10 @@ fi
 cd "$TARGET_DIR" || exit 1
 
 #ограничим доступ к папке 
-chmod 700 "$TARGET_DIR"
+sudo -u "$USERNAME" chmod 700 "$TARGET_DIR"
 
 # Запустим инициализацию PKI
-if ! ./easyrsa init-pki ; then
+if ! sudo -u "$USERNAME" ./easyrsa init-pki ; then
 	echo "Ошибка инициализации. Проверте наличие скрипата easyrsa"
 fi
 
@@ -83,7 +91,8 @@ sed -i "s/^#set_var EASYRSA_ALGO.*/set_var EASYRSA_ALGO    \"$NEW_ALGO\"/" "$VAR
 sed -i "s/^#set_var EASYRSA_DIGEST.*/set_var EASYRSA_DIGEST    \"$NEW_DIGEST\"/" "$VARS_FILE"
 
 # запускаем создание СА
-if ! ./easyrsa build-ca; then
+if ! sudo -u "$USERNAME" ./easyrsa build-ca; then
 	echo "Ошибка при создании CA"
+	exit 1
 fi
 
