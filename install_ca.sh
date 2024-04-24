@@ -38,16 +38,13 @@ fi
 
 
 # Создаем директорию от имени этого пользователя
-# Проверяем, существует ли целевая директория
-if [ -d "$TARGET_DIR" ]; then
-    echo "Директория $TARGET_DIR уже существует."
-    # проверим существование СА
-    if [ -d "$TARDET_DIR/pki" && -f "$TARGET_DIR/pki/ca.crt" ]; then
+# Проверяем, существует ли СА
+if [ -d "$TARGET_DIR" ] && [ -d "$TARDET_DIR/pki" ] && [ -f "$TARGET_DIR/pki/ca.crt" ]; then
     	echo "Центр сертификации уже создан"
      	exit 0
-    fi
 else
-	# Создаем директорию от пользователя которым запущено sudo
+    # СА не существует
+    # Создаем директорию от пользователя которым запущено sudo
     sudo -u "$USERNAME" mkdir -p "$TARGET_DIR"
     
     #ограничим доступ к папке 
@@ -69,6 +66,7 @@ cd "$TARGET_DIR" || exit 1
 # Запустим инициализацию PKI
 if ! sudo -u "$USERNAME" ./easyrsa init-pki ; then
 	echo "Ошибка инициализации. Проверте наличие скрипата easyrsa"
+ 	exit 1
 fi
 
 # изменим файл vars заполним своими значениями
