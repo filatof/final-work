@@ -20,8 +20,18 @@ EASYRSA_DIR="/home/$USERNAME/easy-rsa"
 
 # Проверим установлен easy-rs в сситему
 if ! dpkg -s easy-rsa &> /dev/null; then
-	echo "Пакет easy-rsa не установлен. Запустите скрипт create_ca.sh"
-else
+    	# Устанавливаем пакет easy-rsa
+    	sudo apt-get update
+    	sudo apt-get install -y easy-rsa
+    
+    	# Проверяем успешность установки
+    	if [ $? -eq 0 ]; then
+        	echo "Easy-RSA успешно установлен."
+    	else
+        	echo "Ошибка при установке Easy-RSA. Пожалуйста, проверьте наличие подключения к интернету и повторите попытку."
+        exit 1
+    	fi
+
 	# Проверяем, существует ли easy-rsa на сервере 
 	if [ -d $EASYRSA_DIR ] && [ -d "$EASYRSA_DIR/pki" ] && [ -f "$EASYRSA_DIR/pki/ca.crt" ] ; then
         	echo "easy-rsa уже создан"
@@ -42,12 +52,6 @@ else
 
 		# Переходим в папку easy-rsa
 		cd "$EASYRSA_DIR" || exit 1
-
-		# Запустим инициализацию PKI
-		if ! sudo -u "$USERNAME" ./easyrsa init-pki ; then
-			echo "Ошибка инициализации. Проверте наличие скрипата easyrsa"
- 			exit 1
-		fi
 
 		# изменим файл vars заполним своими значениями
 		sudo -u "$USERNAME" cp vars.example vars
@@ -79,6 +83,12 @@ else
 		sed -i "s/^#set_var EASYRSA_REQ_OU.*/set_var EASYRSA_REQ_OU    \"$NEW_OU\"/" "$VARS_FILE"
 		sed -i "s/^#set_var EASYRSA_ALGO.*/set_var EASYRSA_ALGO    \"$NEW_ALGO\"/" "$VARS_FILE"
 		sed -i "s/^#set_var EASYRSA_DIGEST.*/set_var EASYRSA_DIGEST    \"$NEW_DIGEST\"/" "$VARS_FILE"
+
+		# Запустим инициализацию PKI
+		if ! sudo -u "$USERNAME" ./easyrsa init-pki ; then
+			echo "Ошибка инициализации. Проверте наличие скрипата easyrsa"
+ 			exit 1
+		fi
 
 		# запускаем создание СА
 		if ! sudo -u "$USERNAME" ./easyrsa build-ca; then
