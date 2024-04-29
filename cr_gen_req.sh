@@ -21,9 +21,9 @@ TARGET_DIR="/home/$USERNAME/easy-rsa"
 
 cd $TARGET_DIR || exit 1
 
-./easyrsa gen-req $SERVER nopass
+sudo -u "$USERNAME" ./easyrsa gen-req $SERVER nopass
 
-sudo cp /home/sammy/easy-rsa/pki/private/server.key /etc/openvpn/server/
+cp /home/sammy/easy-rsa/pki/private/server.key /etc/openvpn/server/
 
 
 
