@@ -5,6 +5,19 @@
 # Developed by Ivan Filatoff
 #------------------------------------------------------------------------
 
+
+#Загрузим параметры для скриптов из файла настроек
+#
+# проверяем, что файл не пустой
+if [ -s "param.conf" ]; then
+  # загружаем параметры из файла
+  source param.conf
+else
+  echo "Error: param.conf пустой. Заполните файл в соответсвии с Вашей конфигурацией"
+  exit 1
+fi
+
+
 # сохраним имя исходного пользователя
 USERNAME="$SUDO_USER"
 
@@ -100,6 +113,10 @@ if ! dpkg -s easy-rsa &> /dev/null; then
 		
 		#скопируем закрытый ключ в openvpn
 		sudo cp /home/$USERNAME/easy-rsa/pki/private/server.key /etc/openvpn/server/
+	
+		#передадим файл запроса подписи на СА 
+		scp /home/$USERNAME/easy-rsa/pki/reqs/server.req $USER_CA@$IP_SERV_CA:/tmp
+		echo "Файл запроса подписи лежит на сервере СА $IP_SERV_CA в /tmp"
 	fi
     	echo "Пакет Easy-RSA установлен, продолжим установку..."
 fi
