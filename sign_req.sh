@@ -60,7 +60,7 @@ sign_request() {
     read -p "Введите параметр (server или client): " param
     case $param in
         server)
-            sudo -u "$USERNAME" ./easyrsa import-req /tmp/"$SELECT_FILE" server
+            sudo -u "$USERNAME" ./easyrsa import-req $SELECTED_FILE server
             sudo -u "$USERNAME" ./easyrsa sign-req server server
             sudo -u "$USERNAME" scp /home/$USERNAME/easy-rsa/pki/issued/server.crt $USER_VPN@$IP_SERV_VPN:/tmp
             sudo -u "$USERNAME" scp /home/$USERNAME/easy-rsa/pki/ca.crt $USER_VPN@$IP_SERV_VPN:/tmp
