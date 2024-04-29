@@ -34,8 +34,7 @@ fi
 # Директория, где будет располагаться Easy-RSA
 TARGET_DIR="/home/$USERNAME/easy-rsa"
 
-sudo -u "$USERNAME" mkdir -p /home/$USERNAME/client-configs/keys
-sudo -u "$USERNAME" chmod -R 700 /home/$USERNAME/client-configs
+
 cd $TARGET_DIR
 sudo -u "$USERNAME" ./easyrsa gen-req $CLIENT nopass
 sudo -u "$USERNAME" cp pki/private/$CLIENT.key /home/$USERNAME/client-configs/keys/
