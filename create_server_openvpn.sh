@@ -146,8 +146,8 @@ openvpn --genkey --secret ta.key
 
 sudo cp ta.key /etc/openvpn/server
 
-sudo cp /usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz /etc/openvpn/server/
-sudo gunzip /etc/openvpn/server/server.conf.gz
+sudo cp /usr/share/doc/openvpn/examples/sample-config-files/server.conf /etc/openvpn/server/
+
 
 
 
