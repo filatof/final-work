@@ -115,7 +115,9 @@ if ! dpkg -s easy-rsa &> /dev/null; then
 		sudo cp /home/$USERNAME/easy-rsa/pki/private/server.key /etc/openvpn/server/
 	
 		#передадим файл запроса подписи на СА 
-		sudo -u "$USERNAME" scp /home/$USERNAME/easy-rsa/pki/reqs/server.req $USER_CA@$IP_SERV_CA:/tmp
+		if ! sudo -u "$USERNAME" scp /home/$USERNAME/easy-rsa/pki/reqs/server.req $USER_CA@$IP_SERV_CA:/tmp; then
+			echo "Файл запроса не удалось скопировать на сервер СА"
+		fi
 		echo "Файл запроса подписи лежит на сервере СА $IP_SERV_CA в /tmp"
 	fi
     	echo "Пакет Easy-RSA установлен, продолжим установку..."
