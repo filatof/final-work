@@ -29,7 +29,7 @@ if [ -z "$USERNAME" ]; then
 fi
 
 # Директория, где будет располагаться Easy-RSA
-EASYRSA_DIR="/home/$USERNAME/easy-rsa"
+TARGET_DIR="/home/$USERNAME/easy-rsa"
 
 # Переходим в папку easy-rsa
 cd "$TARGET_DIR" || exit 1
@@ -60,7 +60,7 @@ sign_request() {
     read -p "Введите параметр (server или client): " param
     case $param in
         server)
-            sudo -u "$USERNAME" ./easyrsa import-req $SELECTED_FILE server
+            sudo -u "$USERNAME" ./easyrsa import-req /tmp/$SELECTED_FILE server
             sudo -u "$USERNAME" ./easyrsa sign-req server server
             sudo -u "$USERNAME" scp /home/$USERNAME/easy-rsa/pki/issued/server.crt $USER_VPN@$IP_SERV_VPN:/tmp
             sudo -u "$USERNAME" scp /home/$USERNAME/easy-rsa/pki/ca.crt $USER_VPN@$IP_SERV_VPN:/tmp
