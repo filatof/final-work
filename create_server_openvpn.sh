@@ -90,13 +90,16 @@ if ! dpkg -s easy-rsa &> /dev/null; then
  			exit 1
 		fi
 
-		# запускаем создание СА
+		# запускаем создание запроса на подпись сертификата
 		if ! sudo -u "$USERNAME" ./easyrsa gen-req server nopass; then
-			echo "Ошибка при создании CA"
+			echo "Ошибка при создании запроса"
 			exit 1
 		fi
 		echo "Приватный ключ сервера openvpn расположен: $EASYRSA_DIR/pki/private/server.key"
 		echo "Запрос сертификата расположен: $EASYRSA_DIR/pki/reqs/server.req"
+		
+		#скопируем закрытый ключ в openvpn
+		sudo cp /home/$USERNAME/easy-rsa/pki/private/server.key /etc/openvpn/server/
 	fi
     	echo "Пакет Easy-RSA установлен, продолжим установку..."
 fi
