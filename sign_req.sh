@@ -66,9 +66,10 @@ sign_request() {
             sudo -u "$USERNAME" scp /home/$USERNAME/easy-rsa/pki/ca.crt $USER_VPN@$IP_SERV_VPN:/tmp
             ;;
         client)
+            client_name=$(basename "$SELECTED_FILE" .req)
+            sudo -u "$USERNAME" ./easyrsa import-req /tmp/$SELECTED_FILE "$client_name"  
             sudo -u "$USERNAME" ./easyrsa sign-req client "$client_name"
-            sudo -u "$USERNAME" scp /home/$USERNAME/easy-rsa/pki/issued/server.crt $USER_VPN@$IP_SERV_VPN:/tmp
-            sudo -u "$USERNAME" scp /home/$USERNAME/easy-rsa/pki/ca.crt $USER_VPN@$IP_SERV_VPN:/tmp
+            sudo -u "$USERNAME" scp /home/$USERNAME/easy-rsa/pki/issued/$client_name.crt $USER_VPN@$IP_SERV_VPN:/tmp
             ;;
         *)
             echo "Ошибка: Неверный параметр. Допустимые значения: server или client."
