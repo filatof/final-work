@@ -143,8 +143,10 @@ fi
 
 cd /home/$USERNAME/easy-rsa 
 sudo -u "$USERNAME" openvpn --genkey --secret ta.key
-
+sudo -u "$USERNAME" mkdir -p /home/$USERNAME/client-configs/keys
+sudo -u "$USERNAME" chmod -R 700 /home/$USERNAME/client-configs
 cp /home/$USERNAME/easy-rsa/ta.key /etc/openvpn/server
+sudo -u "$USERNAME" cp /home/$USERNAME/easy-rsa/ta.key /home/$USERNAME/client-configs/keys
 
 cp /usr/share/doc/openvpn/examples/sample-config-files/server.conf /etc/openvpn/server/
 
