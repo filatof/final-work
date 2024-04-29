@@ -141,12 +141,12 @@ else
 fi
 
 
-cd ~/easy-rsa 
-openvpn --genkey --secret ta.key
+sudo -u "$USERNAME" cd /home/$USERNAME/easy-rsa 
+sudo -u "$USERNAME" openvpn --genkey --secret ta.key
 
-sudo cp ta.key /etc/openvpn/server
+cp /home/$USERNAME/easy-rsa/ta.key /etc/openvpn/server
 
-sudo cp /usr/share/doc/openvpn/examples/sample-config-files/server.conf /etc/openvpn/server/
+cp /usr/share/doc/openvpn/examples/sample-config-files/server.conf /etc/openvpn/server/
 
 
 
