@@ -5,19 +5,6 @@
 # Developed by Ivan Filatoff
 #------------------------------------------------------------------------
 
-
-#Загрузим параметры для скриптов из файла настроек
-#
-# проверяем, что файл не пустой
-if [ -s "param.conf" ]; then
-  # загружаем параметры из файла
-  source param.conf
-else
-  echo "Error: param.conf пустой. Заполните файл в соответсвии с Вашей конфигурацией"
-  exit 1
-fi
-
-
 # сохраним имя исходного пользователя
 USERNAME="$SUDO_USER"
 
@@ -27,9 +14,51 @@ if [ -z "$USERNAME" ]; then
     exit 1
 fi
 
+#если передан параметр uninstall то удаляем VPN
+if [ "$1" = "uninstall" ]; then
+    read -p "Вы уверены, что хотите удалить VPN и все файлы? (yes or no): " remove
+    if [ "$remove" = 'yes' ]; then
+        sudo apt-get remove easy-rsa openvpn
+        sudo -u "$USERNAME" rm -r /home/$USERNAME/easy-rsa /home/$USERNAME/client-configs 
+        echo "Сервер VPN удален"
+        exit 0
+    fi
+    exit 0
+fi
+
 # Директория, где будет располагаться Easy-RSA
 EASYRSA_DIR="/home/$USERNAME/easy-rsa"
 
+#будут лежать готовые конфиги для юзеров
+CLIENT_FILES="/home/$USERNAME/client-configs/files"
+
+#будут лежать ключи клиентов
+CLIENT_KEYS="/home/$USERNAME/client-configs/keys"
+
+#
+CLIENT_CONF="/home/$USERNAME/client-configs"
+#CLIENT_BIN="/home/$USERNAME/client-configs/bin"
+
+#создадим директории
+sudo -u "$USERNAME" mkdir -p $CLIENT_FILES
+sudo -u "$USERNAME" mkdir -p $CLIENT_KEYS
+
+
+#инсталирую deb пакет который ставит конфиги и скрипты
+#dpkg -i
+#временное решение
+sudo -u "$USERNAME" cp ~/nanocorpinfra/config/base.conf $CLIENT_CONF
+sudo -u "$USERNAME" cp ~/nanocorpinfra/client.sh $CLIENT_CONF
+sudo -u "$USERNAME" cp ~/nanocorpinfra/var.conf $CLIENT_CONF
+
+# проверяем, что файл не пустой
+if [ -s "param.conf" ]; then
+  # загружаем параметры из файла
+  source param.conf
+else
+  echo "Error: param.conf пустой. Заполните файл в соответсвии с Вашей конфигурацией"
+  exit 1
+fi
 
 # Проверим установлен easy-rs в сситему
 if ! dpkg -s easy-rsa &> /dev/null; then
@@ -110,15 +139,14 @@ if ! dpkg -s easy-rsa &> /dev/null; then
 		fi
 		echo "Приватный ключ сервера openvpn расположен: $EASYRSA_DIR/pki/private/server.key"
 		echo "Запрос сертификата расположен: $EASYRSA_DIR/pki/reqs/server.req"
-		
-		#скопируем закрытый ключ в openvpn
-		sudo cp /home/$USERNAME/easy-rsa/pki/private/server.key /etc/openvpn/server/
 	
 		#передадим файл запроса подписи на СА 
-		if ! sudo -u "$USERNAME" scp /home/$USERNAME/easy-rsa/pki/reqs/server.req $USER_CA@$IP_SERV_CA:/tmp; then
+		if ! sudo -u "$USERNAME" scp $EASYRSA_DIR/pki/reqs/server.req $SERVER_CA:/home/$USER_CA; then
 			echo "Файл запроса не удалось скопировать на сервер СА"
 		fi
-		echo "Файл запроса подписи лежит на сервере СА $IP_SERV_CA в /tmp"
+		
+		ssh -t $USER_CA@$IP_SERV_CA "/home/$USER_CA/nanocorpinfra/sign_req.sh server server.req"
+                
 	fi
     	echo "Пакет Easy-RSA установлен, продолжим установку..."
 fi
@@ -145,12 +173,16 @@ fi
 
 cd /home/$USERNAME/easy-rsa 
 sudo -u "$USERNAME" openvpn --genkey --secret ta.key
-sudo -u "$USERNAME" mkdir -p /home/$USERNAME/client-configs/keys
 sudo -u "$USERNAME" chmod -R 700 /home/$USERNAME/client-configs
 cp /home/$USERNAME/easy-rsa/ta.key /etc/openvpn/server
-sudo -u "$USERNAME" cp /home/$USERNAME/easy-rsa/ta.key /home/$USERNAME/client-configs/keys
+cp /home/$USERNAME/easy-rsa/pki/private/server.key /etc/openvpn/server/
+sudo cp $HOME/{server.crt,ca.crt} /etc/openvpn/server
+sudo -u "$USERNAME" cp /home/$USERNAME/easy-rsa/ta.key $CLIENT_KEYS
 
-cp /usr/share/doc/openvpn/examples/sample-config-files/server.conf /etc/openvpn/server/
+#####################################################################
+#это потом должен сделать deb пакет
+cp /home/$USERNAME/nanocorpinfra/config/server.conf /etc/openvpn/server/
+
 
 
 
