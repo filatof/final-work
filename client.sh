@@ -22,22 +22,19 @@ else
 fi
 
 
-# сохраним имя исходного пользователя
-USERNAME="$SUDO_USER"
-
-# Если имя пользователя не определено, выходим с ошибкой
-if [ -z "$USERNAME" ]; then
-    echo "Ошибка: не удалось определить имя пользователя."
-    exit 1
-fi
-
 # Директория, где будет располагаться Easy-RSA
-TARGET_DIR="/home/$USERNAME/easy-rsa"
+TARGET_DIR="$HOME/easy-rsa"
+cd $TARGET_DIR || exit 1
 
+$TARGET_DIR/easyrsa gen-req $CLIENT nopass
+cp $TARGET_DIR/pki/private/$CLIENT.key $HOME/client-configs/keys/
+scp $TARGET_DIR/pki/reqs/$CLIENT.req $USER_CA@$IP_SERV_CA:/home/$USER_CA
 
-cd $TARGET_DIR
-sudo -u "$USERNAME" ./easyrsa gen-req $CLIENT nopass
-sudo -u "$USERNAME" cp pki/private/$CLIENT.key /home/$USERNAME/client-configs/keys/
-sudo -u "$USERNAME" scp /home/$USERNAME/easy-rsa/pki/reqs/$CLIENT.req $USER_CA@$IP_SERV_CA:/tmp
+ssh -t $USER_CA@$IP_SERV_CA "/home/$USER_CA/nanocorpinfra/sign_req.sh client $CLIENT.req"
+
+$HOME/client-configs/make_config.sh $CLIENT
+
+echo "Настройки клиента созданы"
+echo "Файл лежит $HOME/client-configs/files/"
 
 
