@@ -6,6 +6,8 @@
 #------------------------------------------------------------------------
 #имя найденого и выбранного файла в /tmp
 SELECTED_FILE=""
+PARAM=$1
+FILE=$2
 
 #Загрузим параметры для скриптов из файла настроек
 #
@@ -18,71 +20,29 @@ else
   exit 1
 fi
 
-
-# сохраним имя исходного пользователя
-USERNAME="$SUDO_USER"
-
-# Если имя пользователя не определено, выходим с ошибкой
-if [ -z "$USERNAME" ]; then
-    echo "Ошибка: не удалось определить имя пользователя."
-    exit 1
-fi
-
 # Директория, где будет располагаться Easy-RSA
-TARGET_DIR="/home/$USERNAME/easy-rsa"
+TARGET_DIR="$HOME/easy-rsa"
 
 # Переходим в папку easy-rsa
 cd "$TARGET_DIR" || exit 1
 
-# Функция для вывода списка файлов *.req в директории /tmp
-list_req_files() {
-    echo "Список файлов с расширением *.req в директории /tmp:"
-    files=$(find /tmp -maxdepth 1 -name "*.req" -type f)
-    if [ -z "$files" ]; then
-        echo "Файлы с расширением *.req не найдены."
-        exit 1
-    else
-        echo "$files"
-    fi
-}
-
-# Функция для выбора файла пользователем
-select_file() {
-    read -p "Введите имя файла из списка выше: " SELECTED_FILE
-    if [ ! -f "/tmp/$SELECTED_FILE" ]; then
-        echo "Ошибка: Файл не найден."
-        exit 1
-    fi
-}
-
-# Функция для выбора параметра (server или client) и подписи запроса
-sign_request() {
-    read -p "Введите параметр (server или client): " param
-    case $param in
+    case $PARAM in
         server)
-            sudo -u "$USERNAME" ./easyrsa import-req /tmp/$SELECTED_FILE server
-            sudo -u "$USERNAME" ./easyrsa sign-req server server
-            sudo -u "$USERNAME" scp /home/$USERNAME/easy-rsa/pki/issued/server.crt $USER_VPN@$IP_SERV_VPN:/tmp
-            sudo -u "$USERNAME" scp /home/$USERNAME/easy-rsa/pki/ca.crt $USER_VPN@$IP_SERV_VPN:/tmp
+            $TARGET_DIR/easyrsa import-req /home/$USER_CA/$FILE server
+            $TARGET_DIR/easyrsa sign-req server server
+            scp $TARGET_DIR/pki/issued/server.crt $USER_VPN@$IP_SERV_VPN:/home/$USER_VPN
+            scp $TARGET_DIR/pki/ca.crt $USER_VPN@$IP_SERV_VPN:/home/$USER_VPN
             ;;
         client)
-            client_name=$(basename "$SELECTED_FILE" .req)
-            sudo -u "$USERNAME" ./easyrsa import-req /tmp/$SELECTED_FILE "$client_name"  
-            sudo -u "$USERNAME" ./easyrsa sign-req client "$client_name"
-            sudo -u "$USERNAME" scp /home/$USERNAME/easy-rsa/pki/issued/$client_name.crt $USER_VPN@$IP_SERV_VPN:/tmp
+            client_name=$(basename "$FILE" .req)
+            $TARGET_DIR/easyrsa import-req /home/$USER_CA/$FILE "$client_name"
+            $TARGET_DIR/easyrsa sign-req client "$client_name"
+            scp $TARGET_DIR/pki/issued/$client_name.crt $USER_VPN@$IP_SERV_VPN:/home/$USER_VPN/client-configs/keys
             ;;
         *)
             echo "Ошибка: Неверный параметр. Допустимые значения: server или client."
             exit 1
             ;;
     esac
-}
-
-# Основная часть скрипта
-
-list_req_files
-select_file
-sign_request
-
 
 
