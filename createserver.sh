@@ -1,8 +1,7 @@
 #!/bin/bash
 #
-USERNAME=$1
-HOSTNAME=$2
-META=$3
+HOSTNAME=$1
+META=$2
 
 yc compute instance create \
   --name $HOSTNAME \
