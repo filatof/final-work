@@ -176,7 +176,7 @@ sudo -u "$USERNAME" openvpn --genkey --secret ta.key
 sudo -u "$USERNAME" chmod -R 700 /home/$USERNAME/client-configs
 cp /home/$USERNAME/easy-rsa/ta.key /etc/openvpn/server
 cp /home/$USERNAME/easy-rsa/pki/private/server.key /etc/openvpn/server/
-sudo cp $HOME/{server.crt,ca.crt} /etc/openvpn/server
+cp $HOME/{server.crt,ca.crt} /etc/openvpn/server
 sudo -u "$USERNAME" cp /home/$USERNAME/easy-rsa/ta.key $CLIENT_KEYS
 
 #####################################################################
