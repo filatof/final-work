@@ -145,20 +145,21 @@ if ! dpkg -s easy-rsa &> /dev/null; then
 			echo "Файл запроса не удалось скопировать на сервер СА"
 		fi
 		
-		ssh -t $USER_CA@$IP_SERV_CA "/home/$USER_CA/nanocorpinfra/sign_req.sh server server.req"
-                
-	fi
-    	echo "Пакет Easy-RSA установлен, продолжим установку..."
+              sudo -u "$USERNAME" ssh -t $USER_CA@$IP_SERV_CA "/home/$USER_CA/nanocorpinfra/sign_req.sh server server.req"
+
+        fi
+        echo "Пакет Easy-RSA установлен, продолжим установку..."
+
 fi
 
 # проверим установку пакета openvpn 
 if ! dpkg -s openvpn &> /dev/null; then
     echo "Пакет OpenVPN не установлен. Начинаем установку..."
-    
+
     # Устанавливаем пакет openvpn
     sudo apt-get update
     sudo apt-get install -y openvpn
-    
+
     # Проверяем успешность установки
     if [ $? -eq 0 ]; then
         echo "OpenVPN успешно установлен."
@@ -171,24 +172,33 @@ else
 fi
 
 
-cd /home/$USERNAME/easy-rsa 
+cd /home/$USERNAME/easy-rsa
 sudo -u "$USERNAME" openvpn --genkey --secret ta.key
 sudo -u "$USERNAME" chmod -R 700 /home/$USERNAME/client-configs
 cp /home/$USERNAME/easy-rsa/ta.key /etc/openvpn/server
 cp /home/$USERNAME/easy-rsa/pki/private/server.key /etc/openvpn/server/
-cp $HOME/{server.crt,ca.crt} /etc/openvpn/server
+cp /home/$USERNAME/{server.crt,ca.crt} /etc/openvpn/server
 sudo -u "$USERNAME" cp /home/$USERNAME/easy-rsa/ta.key $CLIENT_KEYS
 
 #####################################################################
 #это потом должен сделать deb пакет
 cp /home/$USERNAME/nanocorpinfra/config/server.conf /etc/openvpn/server/
 
+systemctl -f enable openvpn-server@server.service
+systemctl start openvpn-server@server.service
+
+# Меняем значение параметра net.ipv4.ip_forward в файле /etc/sysctl.conf
+sed -i "s/^net.ipv4.ip_forward.*/net.ipv4.ip_forward = 1/" /etc/sysctl.conf
+sysctl -p
+
+/home/$USERNAME/nanocorpinfra/iptables.sh eth0 udp 1194
+
 #Настроим файрвол
 #
 ufw enable
 ufw allow ssh
+ufw allow 1194
 ufw default deny incoming
 ufw reload
-
 
 
