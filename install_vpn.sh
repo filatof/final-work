@@ -183,7 +183,12 @@ sudo -u "$USERNAME" cp /home/$USERNAME/easy-rsa/ta.key $CLIENT_KEYS
 #это потом должен сделать deb пакет
 cp /home/$USERNAME/nanocorpinfra/config/server.conf /etc/openvpn/server/
 
-
+#Настроим файрвол
+#
+ufw enable
+ufw allow ssh
+ufw default deny incoming
+ufw reload
 
 
 
