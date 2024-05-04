@@ -22,6 +22,7 @@ if [ "$1" = "uninstall" ]; then
 	systemctl desable openvpn-server@server.service
         apt-get remove easy-rsa openvpn
 	apt-get purge openvpn 
+	apt-get purge iptables-persistent
 	rm -rf /etc/openvpn
         sudo -u "$USERNAME" rm -r /home/$USERNAME/easy-rsa /home/$USERNAME/client-configs 
         echo "Сервер VPN удален"
@@ -69,8 +70,8 @@ sudo -u "$USERNAME" sed -i 's/remote [0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+ 1194/rem
 # Проверим установлен easy-rs в сситему
 if ! dpkg -s easy-rsa &> /dev/null; then
     	# Устанавливаем пакет easy-rsa
-    	sudo apt-get update
-    	sudo apt-get install -y easy-rsa
+    	apt-get update
+    	apt-get install -y easy-rsa
     
     	# Проверяем успешность установки
     	if [ $? -eq 0 ]; then
@@ -154,8 +155,9 @@ if ! dpkg -s openvpn &> /dev/null; then
     echo "Пакет OpenVPN не установлен. Начинаем установку..."
 
     # Устанавливаем пакет openvpn
-    sudo apt-get update
-    sudo apt-get install -y openvpn
+    apt-get update
+    apt-get install -y openvpn
+    apt-get install iptables-persistent
     echo "Пакет OpenVPN установлен"
 
     # Проверяем успешность установки
