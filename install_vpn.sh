@@ -63,6 +63,8 @@ else
   echo "Error: var.conf пустой. Заполните файл в соответсвии с Вашей конфигурацией"
   exit 1
 fi
+#заменим ip сервера ВПН на наш внешний адрес
+sudo -u "$USERNAME" sed -i 's/remote [0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+ 1194/remote $EX_IP_VPN 1194/' $CLIENT_CONF/base.conf
 
 # Проверим установлен easy-rs в сситему
 if ! dpkg -s easy-rsa &> /dev/null; then
