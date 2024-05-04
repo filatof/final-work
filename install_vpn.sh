@@ -18,6 +18,8 @@ fi
 if [ "$1" = "uninstall" ]; then
     read -p "Вы уверены, что хотите удалить VPN и все файлы? (yes or no): " remove
     if [ "$remove" = 'yes' ]; then
+	systemctl stop openvpn-server@server.service
+	systemctl desable openvpn-server@server.service
         sudo apt-get remove easy-rsa openvpn
         sudo -u "$USERNAME" rm -r /home/$USERNAME/easy-rsa /home/$USERNAME/client-configs 
         echo "Сервер VPN удален"
@@ -47,16 +49,16 @@ sudo -u "$USERNAME" mkdir -p $CLIENT_KEYS
 #инсталирую deb пакет который ставит конфиги и скрипты
 #dpkg -i
 #временное решение
-sudo -u "$USERNAME" cp ~/nanocorpinfra/config/base.conf $CLIENT_CONF
-sudo -u "$USERNAME" cp ~/nanocorpinfra/client.sh $CLIENT_CONF
-sudo -u "$USERNAME" cp ~/nanocorpinfra/var.conf $CLIENT_CONF
+sudo -u "$USERNAME" cp /home/$USERNAME/nanocorpinfra/config/base.conf $CLIENT_CONF
+sudo -u "$USERNAME" cp /home/$USERNAME/nanocorpinfra/client.sh $CLIENT_CONF
+sudo -u "$USERNAME" cp /home/$USERNAME/nanocorpinfra/var.conf $CLIENT_CONF
 
 # проверяем, что файл не пустой
-if [ -s "param.conf" ]; then
+if [ -s "$CLIENT_CONF/var.conf" ]; then
   # загружаем параметры из файла
-  source param.conf
+  source $CLIENT/var.conf
 else
-  echo "Error: param.conf пустой. Заполните файл в соответсвии с Вашей конфигурацией"
+  echo "Error: var.conf пустой. Заполните файл в соответсвии с Вашей конфигурацией"
   exit 1
 fi
 
@@ -100,16 +102,6 @@ if ! dpkg -s easy-rsa &> /dev/null; then
 		# Путь к файлу vars
 		VARS_FILE="$EASYRSA_DIR/vars"
 
-		# Заменяемые значения
-		NEW_COUNTRY="RU"
-		NEW_PROVINCE="Moscow"
-		NEW_CITY="Moscow"
-		NEW_ORG="EQ"
-		NEW_EMAIL="admin@example.com"
-		NEW_OU="LLC"
-		NEW_ALGO="ec"
-		NEW_DIGEST="sha512"
-
 		# Проверяем, существует ли файл vars
 		if [ ! -f "$VARS_FILE" ]; then
     			echo "Файл $VARS_FILE не найден."
@@ -138,6 +130,7 @@ if ! dpkg -s easy-rsa &> /dev/null; then
 			exit 1
 		fi
 		echo "Приватный ключ сервера openvpn расположен: $EASYRSA_DIR/pki/private/server.key"
+		echo
 		echo "Запрос сертификата расположен: $EASYRSA_DIR/pki/reqs/server.req"
 	
 		#передадим файл запроса подписи на СА 
@@ -145,7 +138,7 @@ if ! dpkg -s easy-rsa &> /dev/null; then
 			echo "Файл запроса не удалось скопировать на сервер СА"
 		fi
 		
-              sudo -u "$USERNAME" ssh -t $USER_CA@$IP_SERV_CA "/home/$USER_CA/nanocorpinfra/sign_req.sh server server.req"
+              sudo -u "$USERNAME" ssh -t $USER_CA@$IP_SERV_CA "/home/$USER_CA/bin/sign_req.sh server server.req"
 
         fi
         echo "Пакет Easy-RSA установлен, продолжим установку..."
@@ -159,6 +152,7 @@ if ! dpkg -s openvpn &> /dev/null; then
     # Устанавливаем пакет openvpn
     sudo apt-get update
     sudo apt-get install -y openvpn
+    echo "Пакет OpenVPN установлен"
 
     # Проверяем успешность установки
     if [ $? -eq 0 ]; then
@@ -176,9 +170,10 @@ cd /home/$USERNAME/easy-rsa
 sudo -u "$USERNAME" openvpn --genkey --secret ta.key
 sudo -u "$USERNAME" chmod -R 700 /home/$USERNAME/client-configs
 cp /home/$USERNAME/easy-rsa/ta.key /etc/openvpn/server
-cp /home/$USERNAME/easy-rsa/pki/private/server.key /etc/openvpn/server/
-cp /home/$USERNAME/{server.crt,ca.crt} /etc/openvpn/server
 sudo -u "$USERNAME" cp /home/$USERNAME/easy-rsa/ta.key $CLIENT_KEYS
+cp /home/$USERNAME/easy-rsa/pki/private/server.key /etc/openvpn/server/
+sudo -u "$USERNAME" cp /home/$USERNAME/ca.crt $CLIENT_KEYS
+mv /home/$USERNAME/{server.crt,ca.crt} /etc/openvpn/server
 
 #####################################################################
 #это потом должен сделать deb пакет
@@ -200,5 +195,5 @@ ufw allow ssh
 ufw allow 1194
 ufw default deny incoming
 ufw reload
-
+exit 0
 

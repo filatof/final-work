@@ -22,6 +22,22 @@ REQ_DIR="/home/$USERNAME/bin"
 #Дириктория где будет находится файл с переменными настроек
 REQ_DIR_ETC="/home/$USERNAME/etc"
 
+sudo -u "$USERNAME" mkdir -p "$REQ_DIR"
+sudo -u "$USERNAME" mkdir -p "$REQ_DIR_ETC"
+#запускаем deb пакет для установки скрипта и настройки в директории
+    # dpkg -i 
+    #временное решение
+    sudo -u "$USERNAME" cp /home/$USERNAME/nanocorpinfra/var.conf $REQ_DIR_ETC
+    sudo -u "$USERNAME" cp /home/$USERNAME/nanocorpinfra/sign_req.sh $REQ_DIR
+
+# проверяем, что файл не пустой
+if [ -s "$REQ_DIR_ETC/var.conf" ]; then
+  # загружаем параметры из файла
+  source $REQ_DIR_ETC/var.conf
+else
+  echo "Error: var.conf пустой. Заполните файл в соответсвии с Вашей конфигурацией"
+  exit 1
+fi
 
 #если передан параметр uninstall то удаляем СА
 if [ "$1" = "uninstall" ]; then
@@ -29,7 +45,7 @@ if [ "$1" = "uninstall" ]; then
     if [ "$remove" = 'yes' ]; then
         sudo apt-get remove easy-rsa
         sudo -u "$USERNAME" rm -r /home/$USERNAME/easy-rsa /home/$USERNAME/bin /home/$USERNAME/etc
-        echo "Сервер СА удален"
+	echo "Сервер СА удален"
         exit 0
     fi
     exit 0
@@ -64,14 +80,6 @@ else
     # СА не существует
     # Создаем директорию от пользователя которым запущено sudo
     sudo -u "$USERNAME" mkdir -p "$TARGET_DIR"
-    
-    sudo -u "$USERNAME" mkdir -p "$REQ_DIR"
-    sudo -u "$USERNAME" mkdir -p "$REQ_DIR_ETC"
-    #запускаем deb пакет для установки скрипта и настройки в директории
-    # dpkg -i 
-    #временное решение
-    sudo -u "$USERNAME" cp /home/$USERNAME/nanocorpinfra/var.conf $REQ_DIR_ETC
-    sudo -u "$USERNAME" cp /home/$USERNAME/nanocorpinfra/sign_req.sh $REQ_DIR
 
     #ограничим доступ к папке 
     sudo -u "$USERNAME" chmod 700 "$TARGET_DIR"
@@ -105,18 +113,9 @@ fi
 # изменим файл vars заполним своими значениями
 #
 sudo -u "$USERNAME" cp vars.example vars
+
 # Путь к файлу vars
 VARS_FILE="$TARGET_DIR/vars"
-
-# Заменяемые значения
-NEW_COUNTRY="RU"
-NEW_PROVINCE="Moscow"
-NEW_CITY="Moscow"
-NEW_ORG="EQ"
-NEW_EMAIL="admin@example.com"
-NEW_OU="LLC"
-NEW_ALGO="ec"
-NEW_DIGEST="sha512"
 
 # Проверяем, существует ли файл vars
 if [ ! -f "$VARS_FILE" ]; then
