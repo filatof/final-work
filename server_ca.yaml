@@ -1,4 +1,5 @@
 #cloud-config
+##Впишите свои настройки в поле name и ssh_authoriezed_keys
 datasource:
   Ec2:
     strict_id: false

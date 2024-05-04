@@ -186,7 +186,14 @@ systemctl start openvpn-server@server.service
 sed -i "s/^net.ipv4.ip_forward.*/net.ipv4.ip_forward = 1/" /etc/sysctl.conf
 sysctl -p
 
-/home/$USERNAME/nanocorpinfra/iptables.sh eth0 udp 1194
+#настраиваем iptables
+iptables -A INPUT -i "$ETH" -m state --state NEW -p "$PROTO" --dport "$PORT" -j ACCEPT
+iptables -A INPUT -i tun+ -j ACCEPT
+iptables -A FORWARD -i tun+ -j ACCEPT
+iptables -A FORWARD -i tun+ -o "$ETH" -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i "$ETH" -o tun+ -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o "$ETH" -j MASQUERADE
+
 
 #Настроим файрвол
 #

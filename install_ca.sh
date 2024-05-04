@@ -92,13 +92,6 @@ else
     fi
 fi
 
-#Настроим файрвол
-#
-ufw enable
-ufw allow ssh
-ufw default deny incoming
-ufw reload
-
 # Переходим в папку easy-rsa
 cd "$TARGET_DIR" || exit 1
 
@@ -138,6 +131,13 @@ if ! sudo -u "$USERNAME" ./easyrsa build-ca; then
 	echo "Ошибка при создании CA"
 	exit 1
 fi
+
+#Настроим файрвол
+#запретим все входящие соединения кроме ssh
+ufw enable
+ufw allow ssh
+ufw default deny incoming
+ufw reload
 
 echo "Удостоверяющий центр успешно создан"
 echo 
