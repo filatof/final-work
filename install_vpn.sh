@@ -20,7 +20,9 @@ if [ "$1" = "uninstall" ]; then
     if [ "$remove" = 'yes' ]; then
 	systemctl stop openvpn-server@server.service
 	systemctl desable openvpn-server@server.service
-        sudo apt-get remove easy-rsa openvpn
+        apt-get remove easy-rsa openvpn
+	apt-get purge openvpn 
+	rm -rf /etc/openvpn
         sudo -u "$USERNAME" rm -r /home/$USERNAME/easy-rsa /home/$USERNAME/client-configs 
         echo "Сервер VPN удален"
         exit 0
@@ -56,7 +58,7 @@ sudo -u "$USERNAME" cp /home/$USERNAME/nanocorpinfra/var.conf $CLIENT_CONF
 # проверяем, что файл не пустой
 if [ -s "$CLIENT_CONF/var.conf" ]; then
   # загружаем параметры из файла
-  source $CLIENT/var.conf
+  source "$CLIENT_CONF/var.conf"
 else
   echo "Error: var.conf пустой. Заполните файл в соответсвии с Вашей конфигурацией"
   exit 1
@@ -173,17 +175,24 @@ cp /home/$USERNAME/easy-rsa/ta.key /etc/openvpn/server
 sudo -u "$USERNAME" cp /home/$USERNAME/easy-rsa/ta.key $CLIENT_KEYS
 cp /home/$USERNAME/easy-rsa/pki/private/server.key /etc/openvpn/server/
 sudo -u "$USERNAME" cp /home/$USERNAME/ca.crt $CLIENT_KEYS
-mv /home/$USERNAME/{server.crt,ca.crt} /etc/openvpn/server
-
+cp /home/$USERNAME/{server.crt,ca.crt} /etc/openvpn/server
+rm /home/$USERNAME/{server.crt,ca.crt} 
 #####################################################################
 #это потом должен сделать deb пакет
 cp /home/$USERNAME/nanocorpinfra/config/server.conf /etc/openvpn/server/
-
+#создадим группу nobody
+groupadd nobody
+#запустим сервер
 systemctl -f enable openvpn-server@server.service
 systemctl start openvpn-server@server.service
+if [ $? -eq 0  ]; then
+       echo "Сервер OpenVPN запущен успешно"
+else
+       echo "Error: Сервер OpenVPN не запущен"
+fi 
 
 # Меняем значение параметра net.ipv4.ip_forward в файле /etc/sysctl.conf
-sed -i "s/^net.ipv4.ip_forward.*/net.ipv4.ip_forward = 1/" /etc/sysctl.conf
+sed -i "s/^#net.ipv4.ip_forward.*/net.ipv4.ip_forward = 1/" /etc/sysctl.conf
 sysctl -p
 
 #настраиваем iptables
@@ -199,7 +208,7 @@ iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o "$ETH" -j MASQUERADE
 #
 ufw enable
 ufw allow ssh
-ufw allow 1194
+ufw allow 1194/udp
 ufw default deny incoming
 ufw reload
 exit 0
