@@ -31,6 +31,7 @@ cd "$TARGET_DIR" || exit 1
 case $PARAM in
    server)
       $TARGET_DIR/easyrsa import-req /home/$USER_CA/$FILE server
+      rm /home/$USER_CA/$FILE 
       $TARGET_DIR/easyrsa sign-req server server
       scp $TARGET_DIR/pki/issued/server.crt $USER_VPN@$IP_SERV_VPN:/home/$USER_VPN
       scp $TARGET_DIR/pki/ca.crt $USER_VPN@$IP_SERV_VPN:/home/$USER_VPN
@@ -38,6 +39,7 @@ case $PARAM in
    client)
       client_name=$(basename "$FILE" .req)
       $TARGET_DIR/easyrsa import-req /home/$USER_CA/$FILE "$client_name"
+      rm /home/$USER_CA/$FILE
       $TARGET_DIR/easyrsa sign-req client "$client_name"
       scp $TARGET_DIR/pki/issued/$client_name.crt $USER_VPN@$IP_SERV_VPN:/home/$USER_VPN/client-configs/keys
       ;;

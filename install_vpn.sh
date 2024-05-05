@@ -21,7 +21,12 @@ if [ "$1" = "uninstall" ]; then
 	systemctl stop openvpn-server@server.service
 	systemctl desable openvpn-server@server.service
         apt-get remove easy-rsa openvpn
+<<<<<<< HEAD
 	apt-get purge openvpn
+=======
+	apt-get purge openvpn 
+	apt-get purge iptables-persistent
+>>>>>>> 6a3e627511bb2643010f25a4889a721cd490594c
 	rm -rf /etc/openvpn
         sudo -u "$USERNAME" rm -r /home/$USERNAME/easy-rsa /home/$USERNAME/client-configs 
         echo "Сервер VPN удален"
@@ -58,17 +63,23 @@ sudo -u "$USERNAME" cp /home/$USERNAME/nanocorpinfra/var.conf $CLIENT_CONF
 # проверяем, что файл не пустой
 if [ -s "$CLIENT_CONF/var.conf" ]; then
   # загружаем параметры из файла
+<<<<<<< HEAD
   source $CLIENT_CONF/var.conf
+=======
+  source "$CLIENT_CONF/var.conf"
+>>>>>>> 6a3e627511bb2643010f25a4889a721cd490594c
 else
   echo "Error: var.conf пустой. Заполните файл в соответсвии с Вашей конфигурацией"
   exit 1
 fi
+#заменим ip сервера ВПН на наш внешний адрес
+sudo -u "$USERNAME" sed -i 's/remote [0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+ 1194/remote $EX_IP_VPN 1194/' $CLIENT_CONF/base.conf
 
 # Проверим установлен easy-rs в сситему
 if ! dpkg -s easy-rsa &> /dev/null; then
     	# Устанавливаем пакет easy-rsa
-    	sudo apt-get update
-    	sudo apt-get install -y easy-rsa
+    	apt-get update
+    	apt-get install -y easy-rsa
     
     	# Проверяем успешность установки
     	if [ $? -eq 0 ]; then
@@ -152,8 +163,9 @@ if ! dpkg -s openvpn &> /dev/null; then
     echo "Пакет OpenVPN не установлен. Начинаем установку..."
 
     # Устанавливаем пакет openvpn
-    sudo apt-get update
-    sudo apt-get install -y openvpn
+    apt-get update
+    apt-get install -y openvpn
+    apt-get install iptables-persistent
     echo "Пакет OpenVPN установлен"
 
     # Проверяем успешность установки
@@ -176,16 +188,27 @@ sudo -u "$USERNAME" cp /home/$USERNAME/easy-rsa/ta.key $CLIENT_KEYS
 cp /home/$USERNAME/easy-rsa/pki/private/server.key /etc/openvpn/server/
 sudo -u "$USERNAME" cp /home/$USERNAME/ca.crt $CLIENT_KEYS
 cp /home/$USERNAME/{server.crt,ca.crt} /etc/openvpn/server
+<<<<<<< HEAD
 rm /home/$USERNAME/{server.crt,ca.crt}
+=======
+rm /home/$USERNAME/{server.crt,ca.crt} 
+>>>>>>> 6a3e627511bb2643010f25a4889a721cd490594c
 #####################################################################
 #это потом должен сделать deb пакет
 cp /home/$USERNAME/nanocorpinfra/config/server.conf /etc/openvpn/server/
-
+#создадим группу nobody
+groupadd nobody
+#запустим сервер
 systemctl -f enable openvpn-server@server.service
 systemctl start openvpn-server@server.service
+if [ $? -eq 0  ]; then
+       echo "Сервер OpenVPN запущен успешно"
+else
+       echo "Error: Сервер OpenVPN не запущен"
+fi 
 
 # Меняем значение параметра net.ipv4.ip_forward в файле /etc/sysctl.conf
-sed -i "s/^net.ipv4.ip_forward.*/net.ipv4.ip_forward = 1/" /etc/sysctl.conf
+sed -i "s/^#net.ipv4.ip_forward.*/net.ipv4.ip_forward = 1/" /etc/sysctl.conf
 sysctl -p
 
 #настраиваем iptables
@@ -201,7 +224,7 @@ iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o "$ETH" -j MASQUERADE
 #
 ufw enable
 ufw allow ssh
-ufw allow 1194
+ufw allow 1194/udp
 ufw default deny incoming
 ufw reload
 exit 0
