@@ -16,5 +16,6 @@ yc compute instance create \
   --create-boot-disk image-folder-id=standard-images,image-family=ubuntu-2204-lts,size=10GB \
   --platform standard-v1 \
   --cores 2 \
-  --memory 2GB \
+  --core-fraction 5 \
+  --memory 1GB \
   --metadata-from-file user-data=$META

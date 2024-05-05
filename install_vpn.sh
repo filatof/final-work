@@ -20,7 +20,9 @@ if [ "$1" = "uninstall" ]; then
     if [ "$remove" = 'yes' ]; then
 	systemctl stop openvpn-server@server.service
 	systemctl desable openvpn-server@server.service
-        sudo apt-get remove easy-rsa openvpn
+        apt-get remove easy-rsa openvpn
+	apt-get purge openvpn
+	rm -rf /etc/openvpn
         sudo -u "$USERNAME" rm -r /home/$USERNAME/easy-rsa /home/$USERNAME/client-configs 
         echo "Сервер VPN удален"
         exit 0
@@ -56,7 +58,7 @@ sudo -u "$USERNAME" cp /home/$USERNAME/nanocorpinfra/var.conf $CLIENT_CONF
 # проверяем, что файл не пустой
 if [ -s "$CLIENT_CONF/var.conf" ]; then
   # загружаем параметры из файла
-  source $CLIENT/var.conf
+  source $CLIENT_CONF/var.conf
 else
   echo "Error: var.conf пустой. Заполните файл в соответсвии с Вашей конфигурацией"
   exit 1
@@ -173,8 +175,8 @@ cp /home/$USERNAME/easy-rsa/ta.key /etc/openvpn/server
 sudo -u "$USERNAME" cp /home/$USERNAME/easy-rsa/ta.key $CLIENT_KEYS
 cp /home/$USERNAME/easy-rsa/pki/private/server.key /etc/openvpn/server/
 sudo -u "$USERNAME" cp /home/$USERNAME/ca.crt $CLIENT_KEYS
-mv /home/$USERNAME/{server.crt,ca.crt} /etc/openvpn/server
-
+cp /home/$USERNAME/{server.crt,ca.crt} /etc/openvpn/server
+rm /home/$USERNAME/{server.crt,ca.crt}
 #####################################################################
 #это потом должен сделать deb пакет
 cp /home/$USERNAME/nanocorpinfra/config/server.conf /etc/openvpn/server/
