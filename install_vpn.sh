@@ -4,7 +4,8 @@
 #
 # Developed by Ivan Filatoff
 #------------------------------------------------------------------------
-
+#Установим Московское время
+timedatectl set-timezone Europe/Moscow
 # сохраним имя исходного пользователя
 USERNAME="$SUDO_USER"
 
