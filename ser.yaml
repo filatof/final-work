@@ -1,0 +1,13 @@
+#cloud-config
+#Впишите свои настройки в поле name и ssh_authoriezed_keys
+datasource:
+  Ec2:
+    strict_id: false
+ssh_pwauth: no
+users:
+ - name: fill
+   sudo: 'ALL=(ALL) NOPASSWD:ALL'
+   shell: /bin/bash  
+   ssh_authorized_keys:  
+   - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIClYHWXZAqPK6vWZFHSQ+Wd78C7nlRj5OvW2nyEDdtHD fill@ubntuserver
+runcmd: []
