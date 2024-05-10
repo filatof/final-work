@@ -1,0 +1,12 @@
+yc compute instance create \
+  --name nat-gateway \
+  --hostname  nat-gateway \
+  --zone ru-central1-a \
+  --network-interface subnet-name=my-subnet,nat-ip-version=ipv4,ipv4-address=192.168.0.10 \
+  --preemptible \
+  --create-boot-disk image-folder-id=standard-images,image-family=nat-instance-ubuntu-2204,size=8GB \
+  --platform standard-v1 \
+  --cores 2 \
+  --core-fraction 5 \
+  --memory 1GB \
+  --metadata-from-file user-data=$META
