@@ -1,7 +1,18 @@
-
+# Создадим сеть в облаке для проекта
 yc vpc network create --name infra-cloud
 
+#Создадим группу безопасности 
 yc vpc security-group create --name nat-instance-sg --network-name infra-cloud 
+
+#напишем правила в группу безопасности
+#Резрешен весь трафик во внутренней сети и весть исходящий трафик
+#Входящий трафик разрешен только на порты 22,80, 443, 1194
+#все остальное запрещено
+yc vpc security-group update-rules nat-instance-sg \
+--add-rule direction=ingress,port=any,protocol=any,v4-cidrs=192.168.0.0/24
+
+yc vpc security-group update-rules nat-instance-sg \
+--add-rule direction=ingress,port=any,protocol=any,v4-cidrs=10.1.0.0/24
 
 yc vpc security-group update-rules nat-instance-sg \
 --add-rule direction=ingress,port=22,protocol=tcp,v4-cidrs=0.0.0.0/0
@@ -18,35 +29,35 @@ yc vpc security-group update-rules nat-instance-sg \
 yc vpc security-group update-rules nat-instance-sg \
 --add-rule direction=egress,protocol=any,port=any,v4-cidrs=0.0.0.0/0
 
-yc vpc security-group update-rules nat-instance-sg \
---add-rule direction=ingress,port=any,protocol=any,v4-cidrs=192.168.0.0/24
-yc vpc security-group update-rules nat-instance-sg \
---add-rule direction=ingress,port=any,protocol=any,v4-cidrs=10.1.0.0/24
-
-
+#Создадим две подсети. Назвал из public-subnet private-subnet
+#В приватной будут сервер СА, сервер мониторинга, сервер репозитория
 yc vpc subnet create \
         --name private-subnet \
         --network-name infra-cloud \
         --zone ru-central1-a \
         --range 192.168.0.0/24 \
         --description "Private subnet"
-
+#в публичной подсети будет сервер ВПН с публичным адресом, будет выступать NAT сервером, 
+#за ним будет вся сеть инфраструктуры
 yc vpc subnet create \
         --name public-subnet \
         --network-name infra-cloud \
         --zone ru-central1-a \
         --range 10.1.0.0/24 \
         --description "Public subnet"
+#Создадим таблицу маршрутизации
 yc vpc route-table create --name nat-instance-route --network-name infra-cloud
+#назначим ВПН сервер с внутренним ip 10.1.0.3 шлюзом по умолчанию
 yc vpc route-table update nat-instance-route --route destination=0.0.0.0/0,next-hop=10.1.0.3
+#привяжем таблицу маршрутизации к приватной подсети
 yc vpc subnet update private-subnet --route-table-name=nat-instance-route
-
+#сохраним в переменную ИД группы безопасности, чтобы потом передать его ВМ при создании
 NAME_SG=$(yc vpc security-group get --name nat-instance-sg | grep -m 1 'id:' | cut -d ' ' -f 2)
-
-
+#файл с метаданными
 META=$1
-
-
+#Создаем однотипные ВМ, с самой минимальной конфигурацией, для выполнения итоговой работы. 
+#Если нужно больше вычислений потом можно поправить 
+#ВМ присваиваю сразу внутренние адреса
 yc compute instance create \
   --name ca \
   --hostname  ca \
