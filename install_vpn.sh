@@ -196,7 +196,7 @@ groupadd nobody
 systemctl -f enable openvpn-server@server.service
 systemctl start openvpn-server@server.service
 if [ $? -eq 0  ]; then
-       echo "Сервер OpenVPN запущен успешно"
+       echo -e "\n================================\nСервер OpenVPN запущен успешно\n================================\n"
 else
        echo "Error: Сервер OpenVPN не запущен"
 fi 
@@ -223,7 +223,7 @@ ufw default deny incoming
 ufw reload
 
 echo -e "\n======================================\nOpenVPN успешно установлен!\n"
-echo -e "Для создания клинта запустите скрипт: \n$CLIENT_CONF/client.sh"
+echo -e "Для создания клинта запустите скрипт: \n$CLIENT_CONF/client.sh\n"
 echo -e "Готовые файлы настроек здесь:\n$CLIENT_FILES"
 echo "======================================"
 exit 0
