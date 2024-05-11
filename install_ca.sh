@@ -5,9 +5,8 @@
 # Developed by Ivan Filatoff
 #--------------------------------------------------------------------
 #установим Московское время
-echo -e "\n====================\nSetting timezone\n===================="
+echo -e "\n=======================\nSetting timezone Moscow\n======================="
 timedatectl set-timezone Europe/Moscow
-echo -e "\nDONE\n"
 
 # сохраним имя исходного пользователя
 USERNAME="$SUDO_USER"
@@ -44,7 +43,7 @@ else
 fi
 
 #если передан параметр uninstall то удаляем СА
-if [ "$1" = "uninstall" ]; then
+if [ "$1" = "-u" ]; then
     read -p "Вы уверены, что хотите удалить СА и все файлы? (yes or no): " remove
     if [ "$remove" = 'yes' ]; then
         sudo apt-get remove easy-rsa
@@ -72,6 +71,7 @@ if ! dpkg -s easy-rsa &> /dev/null; then
     fi
 else
     echo -e "\n============================\nПакет Easy-RSA уже установлен\n============================\n"
+    exit 1
 fi
 
 
