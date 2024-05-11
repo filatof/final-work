@@ -223,7 +223,7 @@ ufw default deny incoming
 ufw reload
 
 echo -e "\n======================================\nOpenVPN успешно установлен!\n"
-echo -e "Для создания клинта запустите скрипт: \n$CLIENT_CONF/client.sh
+echo -e "Для создания клинта запустите скрипт: \n$CLIENT_CONF/client.sh"
 echo -e "Готовые файлы настроек здесь:\n$CLIENT_FILES"
 echo "======================================"
 exit 0
