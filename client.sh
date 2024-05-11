@@ -33,7 +33,7 @@ $TARGET_DIR/easyrsa gen-req $CLIENT nopass
 cp $TARGET_DIR/pki/private/$CLIENT.key $HOME/client-configs/keys/
 #передадим файл запроса подписи на сервер СА в папку хоме
 scp $TARGET_DIR/pki/reqs/$CLIENT.req $USER_CA@$IP_SERV_CA:/home/$USER_CA
-#уделенно запустим скрипт на подпись сертификата клиента
+#удаленно запустим скрипт на подпись сертификата клиента
 ssh -t $USER_CA@$IP_SERV_CA "/home/$USER_CA/bin/sign_req.sh client $CLIENT.req"
 
 cd $HOME/client-configs/ || exit 1
@@ -55,7 +55,7 @@ cat ${BASE_CONFIG} \
     > ${OUTPUT_DIR}/${1}.ovpn
 
 
-echo "Настройки клиента созданы"
-echo "Файл лежит $HOME/client-configs/files/$CLIENT.ovpn"
+echo -e "\n==============================================\nНастройки клиента '$CLIENT' созданы\n"
+echo -e "Файл настроек:\n$HOME/client-configs/files/$CLIENT.ovpn\n==============================================\n"
 exit 0
 
