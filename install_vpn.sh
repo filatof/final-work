@@ -4,8 +4,7 @@
 #
 # Developed by Ivan Filatoff
 #------------------------------------------------------------------------
-#Установим Московское время
-timedatectl set-timezone Europe/Moscow
+
 # сохраним имя исходного пользователя
 USERNAME="$SUDO_USER"
 
@@ -16,21 +15,24 @@ if [ -z "$USERNAME" ]; then
 fi
 
 #если передан параметр uninstall то удаляем VPN
-if [ "$1" = "uninstall" ]; then
+if [ "$1" = "-u" ]; then
     read -p "Вы уверены, что хотите удалить VPN и все файлы? (yes or no): " remove
     if [ "$remove" = 'yes' ]; then
 	systemctl stop openvpn-server@server.service
 	systemctl desable openvpn-server@server.service
-        apt-get remove easy-rsa openvpn
+        apt-get purge easy-rsa openvpn
 	apt-get purge openvpn
 	apt-get purge iptables-persistent
 	rm -rf /etc/openvpn
-        sudo -u "$USERNAME" rm -r /home/$USERNAME/easy-rsa /home/$USERNAME/client-configs 
-        echo "Сервер VPN удален"
+        sudo -u "$USERNAME" rm -r /home/$USERNAME/easy-rsa /home/$USERNAME/client-configs
+	echo -e "\n================\nСервер VPN удален\n================\n"
         exit 0
     fi
     exit 0
 fi
+#установим Московское время
+echo -e "\n=======================\nSetting timezone Moscow\n======================="
+timedatectl set-timezone Europe/Moscow
 
 # Директория, где будет располагаться Easy-RSA
 EASYRSA_DIR="/home/$USERNAME/easy-rsa"
@@ -76,15 +78,15 @@ if ! dpkg -s easy-rsa &> /dev/null; then
     
     	# Проверяем успешность установки
     	if [ $? -eq 0 ]; then
-        	echo "Easy-RSA успешно установлен."
+	 echo -e "\n============================\nEasy-RSA успешно установлен\n============================\n"
     	else
-        	echo "Ошибка при установке Easy-RSA. Пожалуйста, проверьте наличие подключения к интернету и повторите попытку."
-        exit 1
+         echo -e "\n=================================\nОшибка при установке Easy-RSA.\nПожалуйста, проверьте наличие\nподключения к интернету и\nповторите попытку\n=================================\n"
+	exit 1
     	fi
 
 	# Проверяем, существует ли easy-rsa на сервере 
 	if [ -d $EASYRSA_DIR ] && [ -d "$EASYRSA_DIR/pki" ] && [ -f "$EASYRSA_DIR/pki/ca.crt" ] ; then
-        	echo "easy-rsa уже создан"
+        echo -e "\n=======================\nEasy-RSA уже создан\n=======================\n"
 	else
     		# easy-rsa  не существует
     		# Создаем директорию от пользователя которым запущено sudo
@@ -153,7 +155,7 @@ fi
 
 # проверим установку пакета openvpn 
 if ! dpkg -s openvpn &> /dev/null; then
-    echo "Пакет OpenVPN не установлен. Начинаем установку..."
+    echo -e "\n=============================\nПакет OpenVPN не установлен\nНачинаем установку...\n=============================\n"
 
     # Устанавливаем пакет openvpn
     apt-get update
@@ -163,7 +165,7 @@ if ! dpkg -s openvpn &> /dev/null; then
 
     # Проверяем успешность установки
     if [ $? -eq 0 ]; then
-        echo "OpenVPN успешно установлен."
+        echo -e "\n===========================\nOpenVPN успешно установлен!\n===========================\n"
     else
         echo "Ошибка при установке OpenVPN. Пожалуйста, проверьте наличие подключения к интернету и повторите попытку."
         exit 1
@@ -174,10 +176,12 @@ fi
 
 
 cd /home/$USERNAME/easy-rsa
+#генереруем ключ дополнительной защиты и копируем его в директорию сервера и клиентов
 sudo -u "$USERNAME" openvpn --genkey --secret ta.key
 sudo -u "$USERNAME" chmod -R 700 /home/$USERNAME/client-configs
 cp /home/$USERNAME/easy-rsa/ta.key /etc/openvpn/server
 sudo -u "$USERNAME" cp /home/$USERNAME/easy-rsa/ta.key $CLIENT_KEYS
+#копируем подписанный ключ сервера 
 cp /home/$USERNAME/easy-rsa/pki/private/server.key /etc/openvpn/server/
 sudo -u "$USERNAME" cp /home/$USERNAME/ca.crt $CLIENT_KEYS
 cp /home/$USERNAME/{server.crt,ca.crt} /etc/openvpn/server
@@ -217,5 +221,10 @@ ufw allow ssh
 ufw allow 1194/udp
 ufw default deny incoming
 ufw reload
+
+echo -e "\n======================================\nOpenVPN успешно установлен!\n"
+echo -e "Для создания клинта запустите скрипт: \n$CLIENT_CONF/client.sh
+echo -e "Готовые файлы настроек здесь:\n$CLIENT_FILES"
+echo "======================================"
 exit 0
 
