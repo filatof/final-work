@@ -18,7 +18,7 @@ if [ "$1" = "-u" ]; then
     if [ "$remove" = 'yes' ]; then
         sudo apt-get remove easy-rsa
         sudo -u "$USERNAME" rm -r /home/$USERNAME/easy-rsa /home/$USERNAME/bin /home/$USERNAME/etc
-	echo "Сервер СА удален"
+	echo -e "\n================\nСервер СА удален\n================\n"
         exit 0
     fi
     exit 0
