@@ -216,11 +216,11 @@ iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o "$ETH" -j MASQUERADE
 
 #Настроим файрвол
 #
-ufw enable
-ufw allow ssh
-ufw allow 1194/udp
-ufw default deny incoming
-ufw reload
+#ufw enable
+#ufw allow ssh
+#ufw allow 1194/udp
+#ufw default deny incoming
+#ufw reload
 
 echo -e "\n======================================\nOpenVPN успешно установлен!\n"
 echo -e "Для создания клинта запустите скрипт: \n$CLIENT_CONF/client.sh\n"
