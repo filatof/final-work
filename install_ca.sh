@@ -4,10 +4,6 @@
 #
 # Developed by Ivan Filatoff
 #--------------------------------------------------------------------
-#установим Московское время
-echo -e "\n=======================\nSetting timezone Moscow\n======================="
-timedatectl set-timezone Europe/Moscow
-
 # сохраним имя исходного пользователя
 USERNAME="$SUDO_USER"
 # Если имя пользователя не определено, выходим с ошибкой
@@ -15,6 +11,21 @@ if [ -z "$USERNAME" ]; then
     echo "Ошибка: не удалось определить имя пользователя."
     exit 1
 fi
+
+#если передан параметр -u то удаляем СА
+if [ "$1" = "-u" ]; then
+    read -p "Вы уверены, что хотите удалить СА и все файлы? (yes or no): " remove
+    if [ "$remove" = 'yes' ]; then
+        sudo apt-get remove easy-rsa
+        sudo -u "$USERNAME" rm -r /home/$USERNAME/easy-rsa /home/$USERNAME/bin /home/$USERNAME/etc
+	echo "Сервер СА удален"
+        exit 0
+    fi
+    exit 0
+fi
+#установим Московское время
+echo -e "\n=======================\nSetting timezone Moscow\n======================="
+timedatectl set-timezone Europe/Moscow
 
 # Директория, где будет располагаться Easy-RSA
 TARGET_DIR="/home/$USERNAME/easy-rsa"
@@ -40,18 +51,6 @@ if [ -s "$REQ_DIR_ETC/var.conf" ]; then
 else
   echo "Error: var.conf пустой. Заполните файл в соответсвии с Вашей конфигурацией"
   exit 1
-fi
-
-#если передан параметр uninstall то удаляем СА
-if [ "$1" = "-u" ]; then
-    read -p "Вы уверены, что хотите удалить СА и все файлы? (yes or no): " remove
-    if [ "$remove" = 'yes' ]; then
-        sudo apt-get remove easy-rsa
-        sudo -u "$USERNAME" rm -r /home/$USERNAME/easy-rsa /home/$USERNAME/bin /home/$USERNAME/etc
-	echo "Сервер СА удален"
-        exit 0
-    fi
-    exit 0
 fi
 
 # Проверим установлен easy-rs в систему
