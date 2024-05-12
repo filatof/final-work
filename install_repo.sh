@@ -89,6 +89,7 @@ else
 fi
 rm -rf /opt/aptly
 rm -rf /var/www/aptly
+mkdir /var/www/aptly
 # создадим конфигурационный файл aptly
 echo '{
   "rootDir": "/opt/aptly",
@@ -108,7 +109,7 @@ echo '{
   "ppaDistributorID": "ubuntu",
   "ppaCodename": "",
   "FileSystemPublishEndpoints": {
-    "lab": {
+    "infra": {
       "rootDir": "/var/www/aptly",
       "linkMethod": "symlink",
       "verifyMethod": "md5"
@@ -117,7 +118,7 @@ echo '{
   "enableMetricsEndpoint": false
 }' >/etc/aptly.conf
 
-# создадим репозиторий lab
+# создадим репозиторий infra
 if aptly repo create -comment="infra repo" -component="main" -distribution="focal" infra; then
   # запросим путь до первого deb-пакета
   package_path=$(path_request "first package (architecture is all or amd64)")
