@@ -251,8 +251,8 @@ iptables_add OUTPUT -p udp --sport 123 -j ACCEPT
 #трафик тунеля
 iptables_add INPUT -i tun+ -j ACCEPT
 iptables_add FORWARD -i tun+ -j ACCEPT
-iptables_add FORWARD -i tun+ -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
-iptables_add FORWARD -i eth0 -o tun+ -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables_add FORWARD -i tun+ -o "$ETH" -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables_add FORWARD -i "$ETH" -o tun+ -m state --state RELATED,ESTABLISHED -j ACCEPT
 
 # Разрешить исходящий трафик (по умолчанию)
 iptables -P OUTPUT ACCEPT
