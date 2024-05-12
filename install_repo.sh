@@ -180,7 +180,7 @@ htpasswd -nbB -C 10 "$repo_login" "$repo_pass" >>/etc/nginx/conf.d/.htpasswd
 # создадим конфигурационный файл nginx
 echo '
 server {
-        listen 1111 ssl default_server;
+        listen 4444 ssl default_server;
         server_name '"$repo_name"';
         auth_basic              "Restricted Access!";
         auth_basic_user_file    /etc/nginx/conf.d/.htpasswd;
