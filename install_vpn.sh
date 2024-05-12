@@ -160,7 +160,7 @@ if ! dpkg -s openvpn &> /dev/null; then
     # Устанавливаем пакет openvpn
     apt-get update
     apt-get install -y openvpn
-    apt-get install iptables-persistent
+    apt-get install -y iptables-persistent
     echo "Пакет OpenVPN установлен"
 
     # Проверяем успешность установки
@@ -206,21 +206,66 @@ sed -i "s/^#net.ipv4.ip_forward.*/net.ipv4.ip_forward = 1/" /etc/sysctl.conf
 sysctl -p
 
 #настраиваем iptables
-iptables -A INPUT -i "$ETH" -m state --state NEW -p "$PROTO" --dport "$PORT" -j ACCEPT
-iptables -A INPUT -i tun+ -j ACCEPT
-iptables -A FORWARD -i tun+ -j ACCEPT
-iptables -A FORWARD -i tun+ -o "$ETH" -m state --state RELATED,ESTABLISHED -j ACCEPT
-iptables -A FORWARD -i "$ETH" -o tun+ -m state --state RELATED,ESTABLISHED -j ACCEPT
-iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o "$ETH" -j MASQUERADE
+#------------------------------------------------------------------------------------------------------
+# функция, которая проверяет наличие правила в iptables и в случае отсутствия применяет его
+iptables_add() {
+  if ! iptables -C "$@" > /dev/null 2>&1; then
+     iptables -A "$@"
+  fi
+}
 
+# Разрешить трафик для loopback интерфейса
+iptables_add  INPUT -i lo -j ACCEPT
+iptables_add  OUTPUT -o lo -j ACCEPT
 
-#Настроим файрвол
-#
-#ufw enable
-#ufw allow ssh
-#ufw allow 1194/udp
-#ufw default deny incoming
-#ufw reload
+# Разрешить ICMP для ping
+iptables_add INPUT -p icmp --icmp-type 8 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+iptables_add OUTPUT -p icmp -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+
+# Разрешить соединения, установленные или уже существующие
+iptables_add INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables_add OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# Разрешить DNS (порты 53 TCP и UDP)
+iptables_add OUTPUT -p udp --dport 53 -j ACCEPT
+iptables_add OUTPUT -p tcp --dport 53 -j ACCEPT
+iptables_add INPUT -p udp --sport 53 -j ACCEPT
+iptables_add INPUT -p tcp --sport 53 -j ACCEPT
+
+# Разрешить соединения по SSH (порт 22)
+iptables_add INPUT -p tcp --dport 22 -j ACCEPT
+
+# Разрешить HTTP (порт 80)
+iptables_add INPUT -p tcp --dport 80 -j ACCEPT
+
+# Разрешить HTTPS (порт 443)
+iptables_add INPUT -p tcp --dport 443 -j ACCEPT
+
+# Разрешить OpenVPN (порт 1194)
+iptables_add INPUT -p udp --dport 1194 -j ACCEPT
+
+# Разрешить доступ к NTP (порты 123)
+iptables_add INPUT -p udp --dport 123 -j ACCEPT
+iptables_add OUTPUT -p udp --sport 123 -j ACCEPT
+
+#трафик тунеля
+iptables_add INPUT -i tun+ -j ACCEPT
+iptables_add FORWARD -i tun+ -j ACCEPT
+iptables_add FORWARD -i tun+ -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables_add FORWARD -i eth0 -o tun+ -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+# Разрешить исходящий трафик (по умолчанию)
+iptables -P OUTPUT ACCEPT
+
+# Запретить входящий трафик (по умолчанию)
+iptables -P INPUT DROP
+
+# Применить правила NAT
+iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+#--------------------------------------------------------------------------------------------------------
+
+# сохраним правила iptables
+netfilter-persistent save
 
 echo -e "\n======================================\nOpenVPN успешно установлен!\n"
 echo -e "Для создания клинта запустите скрипт: \n$CLIENT_CONF/client.sh\n"
