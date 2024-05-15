@@ -135,12 +135,7 @@ if ! sudo -u "$USERNAME" ./easyrsa build-ca; then
 	exit 1
 fi
 
-#Настроим файрвол
-#запретим все входящие соединения кроме ssh
-ufw enable
-ufw allow ssh
-ufw default deny incoming
-ufw reload
+
 
 echo -e "\n======================================\nУдостоверяющий центр успешно создан!\n"
 echo -e "Приватный ключ расположен:\n$TARGET_DIR/pki/private/ca.key\n"
