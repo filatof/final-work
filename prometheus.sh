@@ -1,16 +1,37 @@
 #!/bin/bash
+#------------------------------------------------------------------------
+# Script to Install prometheus and alertmanager on Linux Ubuntu or Debian
+#
+# Developed by Ivan Filatoff
+#------------------------------------------------------------------------
 
-# активируем опцию, которая прерывает выполнение скрипта, если любая команда завершается с ненулевым статусом
-set -e
+# сохраним имя исходного пользователя
+USERNAME="$SUDO_USER"
 
-# проверим, запущен ли скрипт от пользователя root
-if [[ "${UID}" -ne 0 ]]; then
-  echo -e "You need to run this script as root!"
-  exit 1
+# Если имя пользователя не определено, выходим с ошибкой
+if [ -z "$USERNAME" ]; then
+    echo "Ошибка: не удалось определить имя пользователя."
+    exit 1
 fi
 
+#если передан параметр uninstall то удаляем VPN
+if [ "$1" = "-u" ]; then
+    read -p "Вы уверены, что хотите удалить prometheus и все файлы? (yes or no): " remove
+    if [ "$remove" = 'yes' ]; then
+	      systemctl stop prometheus
+	      systemctl desable prometheus
+	      rm -rf /etc/promeetheus
+	      echo -e "\n================\nСервер prometheus удален\n================\n"
+        exit 0
+    fi
+    exit 0
+fi
+#установим Московское время
+echo -e "\n=======================\nSetting timezone Moscow\n======================="
+timedatectl set-timezone Europe/Moscow
+
 # проверим подключен ли репозиторий
-if [[ ! $(grep -rhE ^deb /etc/apt/sources.list*) == *"deb https://repo.justnikobird.ru:1111/lab focal main"* ]]; then
+if [[ ! $(grep -rhE ^deb /etc/apt/sources.list*) == *"deb https://repo.nanocorpinfra.ru:4444/infra focal main"* ]]; then
   echo -e "Lab repo not connected!\nPlease run vm_start.sh script!\n"
   exit 1
 fi
@@ -47,7 +68,7 @@ systemctl restart systemd-timesyncd.service
 apt-get update
 command_check iptables "Iptables" iptables
 command_check netfilter-persistent "Netfilter-persistent" iptables-persistent
-command_check prometheus "Prometheus" prometheus-lab
+command_check prometheus "Prometheus" prometheus-infra
 command_check basename "Basename" coreutils
 command_check htpasswd "Htpasswd" apache2-utils
 
