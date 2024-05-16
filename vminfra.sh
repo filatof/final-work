@@ -1,8 +1,15 @@
-# Создадим сеть в облаке для проекта
-yc vpc network create --name infra-cloud
+
+# Создание облака
+yc resource-manager cloud create --name infracloud
+
+# Создание каталога 
+yc resource-manager folder create --name infrafolder --cloud-name infracloud
+
+# Создание сети 
+yc vpc network create --name infra-net --folder-name infrafolder
 
 #Создадим группу безопасности 
-yc vpc security-group create --name nat-instance-sg --network-name infra-cloud 
+yc vpc security-group create --name nat-instance-sg --network-name infra-net
 
 #напишем правила в группу безопасности
 #Резрешен весь трафик во внутренней сети и весть исходящий трафик
@@ -13,18 +20,30 @@ yc vpc security-group update-rules nat-instance-sg \
 
 yc vpc security-group update-rules nat-instance-sg \
 --add-rule direction=ingress,port=any,protocol=any,v4-cidrs=10.1.0.0/24
-
+# port ssh
 yc vpc security-group update-rules nat-instance-sg \
 --add-rule direction=ingress,port=22,protocol=tcp,v4-cidrs=0.0.0.0/0
-
+# http
 yc vpc security-group update-rules nat-instance-sg \
 --add-rule direction=ingress,port=80,protocol=tcp,v4-cidrs=0.0.0.0/0
-
+# https
 yc vpc security-group update-rules nat-instance-sg \
 --add-rule direction=ingress,port=443,protocol=tcp,v4-cidrs=0.0.0.0/0
-
+# openvpn
 yc vpc security-group update-rules nat-instance-sg \
 --add-rule direction=ingress,port=1194,protocol=udp,v4-cidrs=0.0.0.0/0
+# monitoring prometheus
+yc vpc security-group update-rules nat-instance-sg \
+--add-rule direction=ingress,port=9090,protocol=udp,v4-cidrs=0.0.0.0/0
+# node exporter
+yc vpc security-group update-rules nat-instance-sg \
+--add-rule direction=ingress,port=9100,protocol=udp,v4-cidrs=0.0.0.0/0
+# openvpn exporter
+yc vpc security-group update-rules nat-instance-sg \
+--add-rule direction=ingress,port=9176,protocol=udp,v4-cidrs=0.0.0.0/0
+# nginx exporter
+yc vpc security-group update-rules nat-instance-sg \
+--add-rule direction=ingress,port=9113,protocol=udp,v4-cidrs=0.0.0.0/0
 
 yc vpc security-group update-rules nat-instance-sg \
 --add-rule direction=egress,protocol=any,port=any,v4-cidrs=0.0.0.0/0
