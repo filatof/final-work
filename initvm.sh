@@ -137,10 +137,15 @@ while true; do
 done
 
 #запишем в файл hosts наши сервера с адресами.
-echo "$CA.$DOMEN $IP_SERV_CA" >> /etc/cloud/templates/hosts.debian.tmpl 
-echo "$VPN.$DOMEN $IP_SERV_VPN" >> /etc/cloud/templates/hosts.debian.tmpl
-echo "$MONITOR.$DOMEN $IP_SERV_MONITOR" >> /etc/cloud/templates/hosts.debian.tmpl
-echo "$REPO.$DOMEN $IP_SERV_REPO" >> /etc/cloud/templates/hosts.debian.tmpl
+echo "$IP_SERV_CA $CA.$DOMEN" >> /etc/hosts            
+echo "$IP_SERV_VPN $VPN.$DOMEN" >> /etc/hosts
+echo "$IP_SERV_MONITOR $MONITOR.$DOMEN" >> /etc/hosts
+echo "$IP_SERV_REPO $REPO.$DOMEN" >> /etc/hosts
+
+echo "$IP_SERV_CA $CA.$DOMEN" >> /etc/cloud/templates/hosts.debian.tmpl 
+echo "$IP_SERV_VPN $VPN.$DOMEN" >> /etc/cloud/templates/hosts.debian.tmpl
+echo "$IP_SERV_MONITOR $MONITOR.$DOMEN" >> /etc/cloud/templates/hosts.debian.tmpl
+echo "$IP_SERV_REPO $REPO.$DOMEN" >> /etc/cloud/templates/hosts.debian.tmpl
 
 
 # подключим репозиторий
@@ -244,7 +249,7 @@ while true; do
     iptables_add OUTPUT -o lo -j ACCEPT
     iptables_add INPUT -i lo -j ACCEPT
     #---Input-SSH---
-    iptables_add INPUT -p tcp --dport $shh_port -j ACCEPT -m comment --comment ssh
+    iptables_add INPUT -p tcp --dport $ssh_port -j ACCEPT -m comment --comment ssh
     #---Output-HTTP---
     iptables_add OUTPUT -p tcp -m multiport --dports $https_port,$http_port -j ACCEPT
     #---ESTABLISHED---
