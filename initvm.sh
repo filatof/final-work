@@ -136,9 +136,16 @@ while true; do
   esac
 done
 
+#запишем в файл hosts наши сервера с адресами.
+echo "$CA.$DOMEN $IP_SERV_CA" >> /etc/cloud/templates/hosts.debian.tmpl 
+echo "$VPN.$DOMEN $IP_SERV_VPN" >> /etc/cloud/templates/hosts.debian.tmpl
+echo "$MONITOR.$DOMEN $IP_SERV_MONITOR" >> /etc/cloud/templates/hosts.debian.tmpl
+echo "$REPO.$DOMEN $IP_SERV_REPO" >> /etc/cloud/templates/hosts.debian.tmpl
+
 
 # подключим репозиторий
 # здесь мы подключим наш локальный репозиторий
+# это нужно сделать после настройки сервера репо, при начальной настройке простить
 echo -e "\n====================\nRepo config\n===================="
 
 while true; do
@@ -146,9 +153,19 @@ while true; do
   echo -e "\n"
   case $cs in
   [Cc]*)
-    # выполним backup файлов с помощью функции bkp
-    bkp /etc/apt/sources.list.d/own_repo.list
-    bkp /etc/apt/auth.conf
+    #проверим существование файлов если да то сделаем бэкап иначе создадим файлы  
+    if [ ! -f /etc/apt/sources.list.d/own_repo.list  ];then
+	    touch /etc/apt/sources.list.d/own_repo.list
+    else 
+	    bkp /etc/apt/sources.list.d/own_repo.list
+    fi
+
+    if [ ! -f /etc/apt/auth.conf.d/auth.conf  ];then
+	    touch /etc/apt/auth.conf.d/auth.conf
+    else
+	    bkp /etc/apt/auth.conf.d/auth.conf
+    fi
+
 
     # запросим логин и пароль для подключения к репозиторию
     read -r -p $'\n\n'"login for $REPO.$DOMEN: " repo_login
@@ -166,14 +183,14 @@ while true; do
       # если в файле /etc/apt/auth.conf записи обнаружены, то попросим пользователя удалить их
       echo -e "\n\nrepo.justnikobird.ru has been configured in /etc/apt/auth.conf!\nPlease manually clean configuration or skip this stage."
       restore_bkp /etc/apt/sources.list.d/own_repo.list
-      restore_bkp /etc/apt/auth.conf
+      restore_bkp /etc/apt/auth.conf.d/auth.conf
       exit 1
     fi
 
     # скачаем и установим gpg-ключ от репозитория
     if ! wget --no-check-certificate -P ~/ https://"$repo_login":"$repo_pass"@repo.$REPO.$DOMEN:$repo_port/infra/infra.asc; then
       restore_bkp /etc/apt/sources.list.d/own_repo.list
-      restore_bkp /etc/apt/auth.conf
+      restore_bkp /etc/apt/auth.conf.d/auth.conf
       exit 1
     else
       apt-key add ~/infra.asc
