@@ -44,7 +44,7 @@ case $PARAM in
       ;;
 
    client) #подпись для клиента
-      client_name=$(basename "$FILE".req)
+      client_name=$(basename "$FILE" .req)
       # импортируем запрос на подпись 
       $TARGET_DIR/easyrsa import-req /home/$USER_CA/$FILE "$client_name"
       rm /home/$USER_CA/$FILE
