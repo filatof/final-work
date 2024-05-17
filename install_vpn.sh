@@ -194,6 +194,8 @@ rm /home/$USERNAME/{$VPN.$DOMEN.crt,ca.crt}
 #####################################################################
 #это потом должен сделать deb пакет
 cp /home/$USERNAME/nanocorpinfra/config/server.conf /etc/openvpn/server/
+sed -i "s/^cert.*/cert $VPN.$DOMEN.crt/" /etc/openvpn/server/server.conf
+sed -i "s/^key.*/key $VPN.$DOMEN.key/" /etc/openvpn/server/server.conf
 #создадим группу nobody
 groupadd nobody
 #запустим сервер
