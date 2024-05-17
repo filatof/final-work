@@ -134,20 +134,20 @@ if ! dpkg -s easy-rsa &> /dev/null; then
 
 
                 # запускаем создание запроса на подпись сертификата
-                if ! sudo -u "$USERNAME" ./easyrsa gen-req $DOMEN  nopass; then
+                if ! sudo -u "$USERNAME" ./easyrsa gen-req $VPN.$DOMEN  nopass; then
                         echo "Ошибка при создании запроса"
                         exit 1
                  fi
-                echo "Приватный ключ сервера openvpn расположен: $EASYRSA_DIR/pki/private/$DOMEN.key"
+                echo "Приватный ключ сервера openvpn расположен: $EASYRSA_DIR/pki/private/$VPN.$DOMEN.key"
                 echo
-                echo "Запрос сертификата расположен: $EASYRSA_DIR/pki/reqs/$DOMEN.req"
+                echo "Запрос сертификата расположен: $EASYRSA_DIR/pki/reqs/$VPN.$DOMEN.req"
 
                 #передадим файл запроса подписи на СА 
-                if ! sudo -u "$USERNAME" scp $EASYRSA_DIR/pki/reqs/$DOMEN.req $USER_CA@$IP_SERV_CA:/home/$USER_CA; then
+                if ! sudo -u "$USERNAME" scp $EASYRSA_DIR/pki/reqs/$VPN.$DOMEN.req $USER_CA@$IP_SERV_CA:/home/$USER_CA; then
                         echo "Файл запроса не удалось скопировать на сервер СА"
                 fi
 
-              sudo -u "$USERNAME" ssh -t $USER_CA@$IP_SERV_CA "/home/$USER_CA/bin/sign_req.sh server $DOMEN.req"
+              sudo -u "$USERNAME" ssh -t $USER_CA@$IP_SERV_CA "/home/$USER_CA/bin/sign_req.sh server $VPN.$DOMEN.req"
 
         fi
         echo "Пакет Easy-RSA установлен, продолжим установку..."
@@ -255,8 +255,8 @@ iptables_add OUTPUT -p udp --sport 123 -j ACCEPT
 #трафик тунеля
 iptables_add INPUT -i tun+ -j ACCEPT
 iptables_add FORWARD -i tun+ -j ACCEPT
-iptables_add FORWARD -i tun+ -o "$ETH" -m state --state RELATED,ESTABLISHED -j ACCEPT
-iptables_add FORWARD -i "$ETH" -o tun+ -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables_add FORWARD -i tun+ -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables_add FORWARD -i eth0 -o tun+ -m state --state RELATED,ESTABLISHED -j ACCEPT
 
 # Разрешить исходящий трафик (по умолчанию)
 iptables -P OUTPUT ACCEPT
