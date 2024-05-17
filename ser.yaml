@@ -10,4 +10,6 @@ users:
    shell: /bin/bash  
    ssh_authorized_keys:  
    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIClYHWXZAqPK6vWZFHSQ+Wd78C7nlRj5OvW2nyEDdtHD fill@ubntuserver
+   - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL+O6cXczlSLnL0wZSMe6qRNKpfbdiG6BtYwCmvi5ctR fill@Macmini.local
+   - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOlPFhFwKepToM3D/5wgUfFsPsv99sZkfUr9gnuhYYr/ fill@MacBookAir.local
 runcmd: []
