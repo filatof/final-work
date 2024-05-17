@@ -187,10 +187,10 @@ sudo -u "$USERNAME" chmod -R 700 /home/$USERNAME/client-configs
 cp /home/$USERNAME/easy-rsa/ta.key /etc/openvpn/server
 sudo -u "$USERNAME" cp /home/$USERNAME/easy-rsa/ta.key $CLIENT_KEYS
 #копируем подписанный ключ сервера 
-cp /home/$USERNAME/easy-rsa/pki/private/$DOMEN.key /etc/openvpn/server/
+cp /home/$USERNAME/easy-rsa/pki/private/$VPN.$DOMEN.key /etc/openvpn/server/
 sudo -u "$USERNAME" cp /home/$USERNAME/ca.crt $CLIENT_KEYS
-cp /home/$USERNAME/{$DOMEN.crt,ca.crt} /etc/openvpn/server
-rm /home/$USERNAME/{$DOMEN.crt,ca.crt}
+cp /home/$USERNAME/{$VPN.$DOMEN.crt,ca.crt} /etc/openvpn/server
+rm /home/$USERNAME/{$VPN.$DOMEN.crt,ca.crt}
 #####################################################################
 #это потом должен сделать deb пакет
 cp /home/$USERNAME/nanocorpinfra/config/server.conf /etc/openvpn/server/
