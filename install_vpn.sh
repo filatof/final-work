@@ -132,24 +132,29 @@ if ! dpkg -s easy-rsa &> /dev/null; then
  			exit 1
 		fi
 
-		# запускаем создание запроса на подпись сертификата
-		if ! sudo -u "$USERNAME" ./easyrsa gen-req server nopass; then
-			echo "Ошибка при создании запроса"
-			exit 1
-		fi
-		echo "Приватный ключ сервера openvpn расположен: $EASYRSA_DIR/pki/private/server.key"
-		echo
-		echo "Запрос сертификата расположен: $EASYRSA_DIR/pki/reqs/server.req"
-	
-		#передадим файл запроса подписи на СА 
-		if ! sudo -u "$USERNAME" scp $EASYRSA_DIR/pki/reqs/server.req $SERVER_CA:/home/$USER_CA; then
-			echo "Файл запроса не удалось скопировать на сервер СА"
-		fi
-		
-              sudo -u "$USERNAME" ssh -t $USER_CA@$IP_SERV_CA "/home/$USER_CA/bin/sign_req.sh server server.req"
+
+                # запускаем создание запроса на подпись сертификата
+                if ! sudo -u "$USERNAME" ./easyrsa gen-req $DOMEN  nopass; then
+                        echo "Ошибка при создании запроса"
+                        exit 1
+                 fi
+                echo "Приватный ключ сервера openvpn расположен: $EASYRSA_DIR/pki/private/$DOMEN.key"
+                echo
+                echo "Запрос сертификата расположен: $EASYRSA_DIR/pki/reqs/$DOMEN.req"
+
+                #передадим файл запроса подписи на СА 
+                if ! sudo -u "$USERNAME" scp $EASYRSA_DIR/pki/reqs/$DOMEN.req $USER_CA@$IP_SERV_CA:/home/$USER_CA; then
+                        echo "Файл запроса не удалось скопировать на сервер СА"
+                fi
+
+              sudo -u "$USERNAME" ssh -t $USER_CA@$IP_SERV_CA "/home/$USER_CA/bin/sign_req.sh server $DOMEN.req"
 
         fi
         echo "Пакет Easy-RSA установлен, продолжим установку..."
+
+
+
+
 
 fi
 
@@ -182,11 +187,10 @@ sudo -u "$USERNAME" chmod -R 700 /home/$USERNAME/client-configs
 cp /home/$USERNAME/easy-rsa/ta.key /etc/openvpn/server
 sudo -u "$USERNAME" cp /home/$USERNAME/easy-rsa/ta.key $CLIENT_KEYS
 #копируем подписанный ключ сервера 
-cp /home/$USERNAME/easy-rsa/pki/private/server.key /etc/openvpn/server/
+cp /home/$USERNAME/easy-rsa/pki/private/$DOMEN.key /etc/openvpn/server/
 sudo -u "$USERNAME" cp /home/$USERNAME/ca.crt $CLIENT_KEYS
-cp /home/$USERNAME/{server.crt,ca.crt} /etc/openvpn/server
-rm /home/$USERNAME/{server.crt,ca.crt}
-
+cp /home/$USERNAME/{$DOMEN.crt,ca.crt} /etc/openvpn/server
+rm /home/$USERNAME/{$DOMEN.crt,ca.crt}
 #####################################################################
 #это потом должен сделать deb пакет
 cp /home/$USERNAME/nanocorpinfra/config/server.conf /etc/openvpn/server/

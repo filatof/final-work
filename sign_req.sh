@@ -30,18 +30,21 @@ cd "$TARGET_DIR" || exit 1
 
 case $PARAM in
    server) #подпись для сервера
-     # импортируем запрос на подписание
-      $TARGET_DIR/easyrsa import-req /home/$USER_CA/$FILE server
-      rm /home/$USER_CA/$FILE 
+
+       server_name=$(basename "$FILE" .req)
+      # импортируем запрос на подписание
+      $TARGET_DIR/easyrsa import-req /home/$USER_CA/$FILE "$server_name"
+      rm /home/$USER_CA/$FILE
       # подписываем запрос
-      $TARGET_DIR/easyrsa sign-req server server
+      $TARGET_DIR/easyrsa sign-req server $(basename "$FILE" .req)
       #возвращаем сертификат запросившему подпись серверу
-      scp $TARGET_DIR/pki/issued/server.crt $USER_VPN@$IP_SERV_VPN:/home/$USER_VPN
+      scp $TARGET_DIR/pki/issued/$server_name.crt $USER_VPN@$IP_SERV_VPN:/home/$USER_VPN
       #передадим сертификат СА
       scp $TARGET_DIR/pki/ca.crt $USER_VPN@$IP_SERV_VPN:/home/$USER_VPN
       ;;
+
    client) #подпись для клиента
-      client_name=$(basename "$FILE" .req)
+      client_name=$(basename "$FILE".req)
       # импортируем запрос на подпись 
       $TARGET_DIR/easyrsa import-req /home/$USER_CA/$FILE "$client_name"
       rm /home/$USER_CA/$FILE

@@ -90,7 +90,7 @@ yc compute instance create \
   --name ca \
   --hostname  ca \
   --zone ru-central1-a \
-  --network-interface subnet-name=$PRIVATESUBNET,security-group-ids=$NAME_SG,ipv4-address=192.168.0.3 \
+  --network-interface subnet-name=$PRIVATE_SUBNET,security-group-ids=$NAME_SG,ipv4-address=192.168.0.3 \
   --preemptible \
   --create-boot-disk image-folder-id=standard-images,image-family=ubuntu-2204-lts,size=10GB \
   --platform standard-v1 \
@@ -103,7 +103,7 @@ yc compute instance create \
   --name vpn \
   --hostname  vpn \
   --zone ru-central1-a \
-  --network-interface subnet-name=$PUBLICSUBNET,security-group-ids=$NAME_SG,nat-ip-version=ipv4,ipv4-address=192.168.0.131 \
+  --network-interface subnet-name=$PUBLIC_SUBNET,security-group-ids=$NAME_SG,nat-ip-version=ipv4,ipv4-address=192.168.0.131 \
   --preemptible \
   --create-boot-disk image-folder-id=standard-images,image-family=ubuntu-2204-lts,size=10GB \
   --platform standard-v1 \
@@ -116,7 +116,7 @@ yc compute instance create \
   --name monitor \
   --hostname  monitor \
   --zone ru-central1-a \
-  --network-interface subnet-name=$PRIVATESUBNET,security-group-ids=$NAME_SG,ipv4-address=192.168.0.5 \
+  --network-interface subnet-name=$PRIVATE_SUBNET,security-group-ids=$NAME_SG,ipv4-address=192.168.0.5 \
   --preemptible \
   --create-boot-disk image-folder-id=standard-images,image-family=ubuntu-2204-lts,size=10GB \
   --platform standard-v1 \
@@ -129,7 +129,7 @@ yc compute instance create \
   --name repo \
   --hostname  repo \
   --zone ru-central1-a \
-  --network-interface subnet-name=$PRIVATESUBNET,security-group-ids=$NAME_SG,ipv4-address=192.168.0.6 \
+  --network-interface subnet-name=$PRIVATE_SUBNET,security-group-ids=$NAME_SG,ipv4-address=192.168.0.6 \
   --preemptible \
   --create-boot-disk image-folder-id=standard-images,image-family=ubuntu-2204-lts,size=10GB \
   --platform standard-v1 \
