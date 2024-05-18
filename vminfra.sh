@@ -43,16 +43,16 @@ yc vpc security-group update-rules --name $SG --folder-name $NAME_FOLDER \
 --add-rule direction=ingress,port=1194,protocol=udp,v4-cidrs=0.0.0.0/0
 # monitoring prometheus
 yc vpc security-group update-rules --name $SG --folder-name $NAME_FOLDER \
---add-rule direction=ingress,port=9090,protocol=udp,v4-cidrs=0.0.0.0/0
+--add-rule direction=ingress,port=9090,protocol=tcp,v4-cidrs=0.0.0.0/0
 # node exporter
 yc vpc security-group update-rules --name $SG --folder-name $NAME_FOLDER \
---add-rule direction=ingress,port=9100,protocol=udp,v4-cidrs=0.0.0.0/0
+--add-rule direction=ingress,port=9100,protocol=tcp,v4-cidrs=0.0.0.0/0
 # openvpn exporter
 yc vpc security-group update-rules --name $SG --folder-name $NAME_FOLDER \
---add-rule direction=ingress,port=9176,protocol=udp,v4-cidrs=0.0.0.0/0
+--add-rule direction=ingress,port=9176,protocol=tcp,v4-cidrs=0.0.0.0/0
 # nginx exporter
 yc vpc security-group update-rules --name $SG --folder-name $NAME_FOLDER \
---add-rule direction=ingress,port=9113,protocol=udp,v4-cidrs=0.0.0.0/0
+--add-rule direction=ingress,port=9113,protocol=tcp,v4-cidrs=0.0.0.0/0
 
 yc vpc security-group update-rules --name $SG --folder-name $NAME_FOLDER \
 --add-rule direction=egress,protocol=any,port=any,v4-cidrs=0.0.0.0/0
