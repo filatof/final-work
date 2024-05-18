@@ -36,7 +36,7 @@ if ! dpkg -s golang  &> /dev/null; then
 fi
 
 sudo -u "$USERNAME" wget -P /home/$USERNAME/  https://github.com/kumina/openvpn_exporter/archive/refs/tags/v0.3.0.tar.gz
-sudo -u tar xvf /home/$USERNAME/v0.3.0.tar.gz -C /home/$USERNAME
+sudo -u "$USERNAME" tar xvf /home/$USERNAME/v0.3.0.tar.gz -C /home/$USERNAME
 
 #В переменной openvpnStatusPaths конфигурационного файла main.go укажем путь до лога OpenVPN
 sudo -u "$USERNAME" sed -i 's|examples/client.status,examples/server2.status,examples/server3.status|/var/log/openvpn/openvpn-status.log|' /home/$USERNAME/openvpn_exporter-0.3.0/main.go
