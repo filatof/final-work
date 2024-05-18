@@ -40,8 +40,9 @@ sudo -u "$USERNAME" tar xvf /home/$USERNAME/v0.3.0.tar.gz -C /home/$USERNAME
 
 #В переменной openvpnStatusPaths конфигурационного файла main.go укажем путь до лога OpenVPN
 sudo -u "$USERNAME" sed -i 's|examples/client.status,examples/server2.status,examples/server3.status|/var/log/openvpn/openvpn-status.log|' /home/$USERNAME/openvpn_exporter-0.3.0/main.go
-#соберем программу 
-go build /home/$USERNAME/openvpn_exporter-0.3.0/main.go
+#соберем программу
+cd /home/$USERNAME/openvpn_exporter-0.3.0 
+go build main.go
 
 cp /home/$USERNAME/openvpn_exporter-0.3.0/main /usr/bin/openvpn_exporter
 
