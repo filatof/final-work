@@ -120,7 +120,7 @@ echo
 while true; do
   read -r -n 1 -p "Continue ? (y|n) " yn
   case $yn in
-  [Yn]*)
+  [Yy]*)
     echo -e "\n\n"
     sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT="/&ipv6.disable=1 /' /etc/default/grub
     sed -i 's/^GRUB_CMDLINE_LINUX="/&ipv6.disable=1 /' /etc/default/grub
