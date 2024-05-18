@@ -116,6 +116,7 @@ done
 # выключим ipv6
 echo -e "\n====================\nDisabling ipv6\n===================="
 echo -e "\nОтключить ip версии 6\n"
+echo
 while true; do
   read -r -n 1 -p "Continue ? (y|n) " yn
   case $yn in
@@ -129,7 +130,7 @@ while true; do
     ;;
 
   [Nn]*)
-    echo -e "\n"
+    echo -e "\nСработало нет"
     break
     ;;
   *) echo -e "\nPlease answer Y or N!\n" ;;
@@ -224,7 +225,7 @@ while true; do
     echo -e "\n"
     break
     ;;
-  *) echo -e "\nPlease answer C or S!\n" ;;
+  *) echo -e "\nPlease answer Y or N!\n" ;;
   esac
 done
 
