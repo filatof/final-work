@@ -77,7 +77,7 @@ EOF
 if ! getent passwd node_exporter &>/dev/null; then
         adduser --system --home /usr/share/prometheus --no-create-home --ingroup "node_exporter" --disabled-password --shell /bin/false "node_exporter"
 fi
-if ! getent group node_exporter &>/dev/null
+if ! getent group node_exporter &>/dev/null; then
         addgroup --system "node_exporter" --quiet
 fi
 
