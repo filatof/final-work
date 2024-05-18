@@ -89,11 +89,11 @@ fi
 
 # настроим ssh Изменим порт ssh , запретим рут логин, аутентификацию по паролю
 echo -e "\n====================\nEdit sshd_config file\n===================="
-
+echo -e "\nРедактировать настройки\n"
 while true; do
-  read -r -n 1 -p "Continue or Skip? (c|s) " cs
-  case $cs in
-  [Cc]*)
+  read -r -n 1 -p "Continue ? (y|n) " yn
+  case $yn in
+  [Yy]*)
     sed -i "s/#\?\(Port\s*\).*$/\1 $ssh_port/" /etc/ssh/sshd_config
     sed -i 's/#\?\(PermitRootLogin\s*\).*$/\1 no/' /etc/ssh/sshd_config
     sed -i 's/#\?\(PubkeyAuthentication\s*\).*$/\1 yes/' /etc/ssh/sshd_config
@@ -105,21 +105,21 @@ while true; do
     break
     ;;
 
-  [Ss]*)
+  [Nn]*)
     echo -e "\n"
     break
     ;;
-  *) echo -e "\nPlease answer C or S!\n" ;;
+  *) echo -e "\nPlease answer Y or N!\n" ;;
   esac
 done
 
 # выключим ipv6
 echo -e "\n====================\nDisabling ipv6\n===================="
-
+echo -e "\nОтключить ip версии 6\n"
 while true; do
-  read -r -n 1 -p "Continue or Skip? (c|s) " cs
-  case $cs in
-  [Cc]*)
+  read -r -n 1 -p "Continue ? (y|n) " yn
+  case $yn in
+  [Yn]*)
     echo -e "\n\n"
     sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT="/&ipv6.disable=1 /' /etc/default/grub
     sed -i 's/^GRUB_CMDLINE_LINUX="/&ipv6.disable=1 /' /etc/default/grub
@@ -128,11 +128,11 @@ while true; do
     break
     ;;
 
-  [Ss]*)
+  [Nn]*)
     echo -e "\n"
     break
     ;;
-  *) echo -e "\nPlease answer C or S!\n" ;;
+  *) echo -e "\nPlease answer Y or N!\n" ;;
   esac
 done
 
@@ -152,12 +152,12 @@ echo "$IP_SERV_REPO $REPO.$DOMEN" >> /etc/cloud/templates/hosts.debian.tmpl
 # здесь мы подключим наш локальный репозиторий
 # это нужно сделать после настройки сервера репо, при начальной настройке простить
 echo -e "\n====================\nRepo config\n===================="
-
+echo -e "\nЭто лучше сделать после настройки\nсервера репозитория в Вашей инфраструктуре\n"
 while true; do
-  read -r -n 1 -p "Continue or Skip? (c|s) " cs
+  read -r -n 1 -p "Continue ? (y|n) " yn
   echo -e "\n"
-  case $cs in
-  [Cc]*)
+  case $yn in
+  [Yy]*)
     #проверим существование файлов если да то сделаем бэкап иначе создадим файлы  
     if [ ! -f /etc/apt/sources.list.d/own_repo.list  ];then
 	    touch /etc/apt/sources.list.d/own_repo.list
@@ -220,7 +220,7 @@ while true; do
     break
     ;;
 
-  [Ss]*)
+  [Nn]*)
     echo -e "\n"
     break
     ;;
@@ -230,18 +230,15 @@ done
 
 # настроим iptables
 echo -e "\n====================\nIptables config\n===================="
+echo -e "\nДобавим правила в iptables\n"
 while true; do
   read -r -n 1 -p "Current ssh session may drop! To continue you have to relogin to this host via $ssh_port ssh-port and run this script again. Are you ready? (y|n) " yn
   case $yn in
   [Yy]*) #---DNS---
-    iptables_add OUTPUT -p udp --dport 53 -j ACCEPT -m comment --comment dns
-    iptables_add OUTPUT -p tcp --dport 53 -j ACCEPT -m comment --comment dns
-    iptables_add INPUT -p udp --sport 53 -j ACCEPT -m comment --comment dns
-    iptables_add INPUT -p tcp --sport 53 -j ACCEPT -m comment --comment dns
+    iptables_add INPUT -p udp --sport 53 -j ACCEPT 
+    iptables_add INPUT -p tcp --sport 53 -j ACCEPT 
     #---NTP---
-    iptables_add OUTPUT -p udp --dport 123 -j ACCEPT -m comment --comment ntp
-    #---REPO---
-    iptables_add OUTPUT -p tcp --dport $repo_port -j ACCEPT -m comment --comment repo.nanocorpinfra.ru
+    iptables_add INPUT -p udp --dport 123 -j ACCEPT
     #---ICMP---
     iptables_add OUTPUT -p icmp -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
     iptables_add INPUT -p icmp -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
@@ -249,19 +246,16 @@ while true; do
     iptables_add OUTPUT -o lo -j ACCEPT
     iptables_add INPUT -i lo -j ACCEPT
     #---Input-SSH---
-    iptables_add INPUT -p tcp --dport $ssh_port -j ACCEPT -m comment --comment ssh
-    #---Output-HTTP---
-    iptables_add OUTPUT -p tcp -m multiport --dports $https_port,$http_port -j ACCEPT
+    iptables_add INPUT -p tcp --dport $ssh_port -j ACCEPT 
     #---ESTABLISHED---
     iptables_add INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
     iptables_add OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
     #---INVALID---
     iptables_add OUTPUT -m state --state INVALID -j DROP
     iptables_add INPUT -m state --state INVALID -j DROP
-    #---Defaul-Drop---
-    iptables -P OUTPUT DROP
+    #---Defaul-
+    iptables -P OUTPUT ACCEPT
     iptables -P INPUT DROP
-    iptables -P FORWARD DROP
     # save iptables config
     echo -e "\n====================\nSaving iptables config\n====================\n"
     service netfilter-persistent save
