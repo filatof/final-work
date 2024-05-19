@@ -94,7 +94,7 @@ After=network.target nginx.service
 Restart=on-failure
 User=nginx_exporter
 EnvironmentFile=/opt/nginx_exporter/prometheus-nginx-exporter
-ExecStart=/usr/bin/nginx-prometheus-exporter $ARGS
+ExecStart=/usr/bin/nginx-prometheus-exporter \$ARGS
 
 [Install]
 WantedBy=multi-user.target
