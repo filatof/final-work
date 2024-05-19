@@ -16,15 +16,15 @@ fi
 
 #если передан параметр -u то удаляем
 if [ "$1" = "-u" ]; then
-    read -p "Вы уверены, что хотите удалить VPN и все файлы? (yes or no): " remove
+    read -p "Вы уверены, что хотите удалить repo сервер и все файлы? (yes or no): " remove
     if [ "$remove" = 'yes' ]; then
 	      systemctl stop nginx
 	      systemctl desable nginx
-        apt-get purge nginx
+              apt-get purge nginx
 	      apt-get purge apache2-utils
 	      apt-get purge bzip2
 	      rm -f /usr/local/bin/aptly
-        rm -f /etc/aptly.conf
+              rm -f /etc/aptly.conf
 	      echo -e "\n================\nСервер Repo удален\n================\n"
         exit 0
     fi
@@ -150,7 +150,7 @@ echo -e "\nDONE\n"
 aptly publish repo infra filesystem:infra:infra
 
 # экспортируем открытый gpg-ключ на web-страницу репозитория
-gpg --export --armor | tee /var/www/aptly/infra/labtest.asc >/dev/null
+gpg --export --armor | tee /var/www/aptly/infra/infra.asc >/dev/null
 
 # экспортируем открытый ключ ca на web-страницу репозитория
 cp "$(path_request "ca certificate")" /var/www/aptly/infra/ca.crt
