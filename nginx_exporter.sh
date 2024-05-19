@@ -59,12 +59,10 @@ cp /home/$USERNAME/$crt /opt/nginx_exporter/
 cp /home/$USERNAME/$key /opt/nginx_exporter/
 
 #создадим файл для настроек https
-cat <<EOF> /opt/nginx_exporter/prometheus-nginx-exporter
-# Set the command-line arguments to pass to the server.
-# Due to shell scaping, to pass backslashes for regexes, you need to double
-# them (\\d for \d). If running under systemd, you need to double them again
-# (\\\\d to mean \d), and escape newlines too.
-ARGS="-web.secured-metrics -web.ssl-server-cert /opt/nginx_exporter/repo.nanocorpinfra.ru.crt -web.ssl-server-key /opt/nginx_exporter/repo.nanocorpinfra.ru.key"
+cat <<EOF> /opt/nginx_exporter/web.yml
+tls_server_config:
+  cert_file: repo.nanocorpinfra.ru.crt
+  key_file: repo.nanocorpinfra.ru.key
 EOF
 
 if ! getent group nginx_exporter &>/dev/null; then
@@ -94,7 +92,7 @@ After=network.target nginx.service
 Restart=on-failure
 User=nginx_exporter
 EnvironmentFile=/opt/nginx_exporter/prometheus-nginx-exporter
-ExecStart=/usr/bin/nginx-prometheus-exporter \$ARGS
+ExecStart=/usr/bin/nginx-prometheus-exporter --web.listen-address=":9113" --web.config.file="/opt/nginx_exporter/web.yml" --nginx.scrape-uri="http://localhost:8080/stub_status"
 
 [Install]
 WantedBy=multi-user.target
