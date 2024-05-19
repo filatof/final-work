@@ -194,7 +194,7 @@ while true; do
     fi
 
     # скачаем и установим gpg-ключ от репозитория
-    if ! sudo -u "$USERNAME" wget --no-check-certificate -P ~/ https://"$repo_login":"$repo_pass"@$REPO.$DOMEN:$repo_port/infra/infra.asc; then
+    if ! sudo -u "$USERNAME" wget --no-check-certificate -P /home/$USERNAME/  https://"$repo_login":"$repo_pass"@$REPO.$DOMEN:$repo_port/infra/infra.asc; then
       restore_bkp /etc/apt/sources.list.d/own_repo.list
       restore_bkp /etc/apt/auth.conf.d/auth.conf
       exit 1
