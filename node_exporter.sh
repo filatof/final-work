@@ -16,10 +16,10 @@ fi
 if [ "$1" = "-u" ]; then
     read -p "Вы уверены, что хотите удалить node_exporter  и все файлы? (yes or no): " remove
     if [ "$remove" = 'yes' ]; then
-         rm /usr/bin/node_exporter
-         rm -rf /opt/node_exporter/
          systemctl stop node_exporter.service
          systemctl disable node_exporter.service
+	 rm /usr/bin/node_exporter
+         rm -rf /opt/node_exporter/
          rm /etc/systemd/system/node_exporter.service
          sudo -u "$USERNAME" rm -rf ~/node-exporter/
          iptables -D INPUT -p tcp --dport 9100 -j ACCEPT
