@@ -30,9 +30,6 @@ if [ "$1" = "-u" ]; then
     fi
     exit 0
 fi
-#установим Московское время
-echo -e "\n=======================\nSetting timezone Moscow\n======================="
-timedatectl set-timezone Europe/Moscow
 
 # Директория, где будет располагаться Easy-RSA
 EASYRSA_DIR="/home/$USERNAME/easy-rsa"
@@ -48,14 +45,63 @@ CLIENT_CONF="/home/$USERNAME/client-configs"
 #CLIENT_BIN="/home/$USERNAME/client-configs/bin"
 
 #создадим директории
-sudo -u "$USERNAME" mkdir -p $CLIENT_FILES
-sudo -u "$USERNAME" mkdir -p $CLIENT_KEYS
+if [ ! -d $CLIENT_FILES  ]; then
+    sudo -u "$USERNAME" mkdir -p $CLIENT_FILES
+fi
+if [ ! -d $CLIENT_KEYS ]; then
+    sudo -u "$USERNAME" mkdir -p $CLIENT_KEYS
+fi
 
+#создадим файл с базовыми настройками для клиентов
+sudo -u "$USERNAME" cat <<EOF> /home/$USERNAME/nanocorpinfra/config/base.conf $CLIENT_CONF
+client
+dev tun
+proto udp
+remote 158.160.111.246 1194
+resolv-retry infinite
+nobind
+user nobody
+group nobody
+persist-key
+persist-tun
+;ca ca.crt
+;cert client.crt
+;key client.key
+remote-cert-tls server
+;tls-auth ta.key 1
+cipher AES-256-GCM
+auth SHA256
+key-direction 1
+verb 3
+EOF
 
-#инсталирую deb пакет который ставит конфиги и скрипты
-#dpkg -i
-#временное решение
-sudo -u "$USERNAME" cp /home/$USERNAME/nanocorpinfra/config/base.conf $CLIENT_CONF
+sudo -u "$USERNAME" cat <<EOF> /etc/openvpn/server/server.conf
+port 1194
+proto udp
+dev tun
+ca ca.crt
+cert server.crt
+key server.key  # This file should be kept secret
+dh none
+server 10.8.0.0 255.255.255.0
+ifconfig-pool-persist /var/log/openvpn/ipp.txt
+push "redirect-gateway def1 bypass-dhcp"
+push "dhcp-option DNS 208.67.222.222"
+push "dhcp-option DNS 208.67.220.220"
+client-to-client
+keepalive 10 120
+tls-crypt ta.key  # This file is secret
+cipher AES-256-GCM
+auth SHA256
+user nobody
+group nobody
+persist-key
+persist-tun
+status /var/log/openvpn/openvpn-status.log
+verb 3
+explicit-exit-notify 1
+EOF
+
 sudo -u "$USERNAME" cp /home/$USERNAME/nanocorpinfra/client.sh $CLIENT_CONF
 sudo -u "$USERNAME" cp /home/$USERNAME/nanocorpinfra/var.conf $CLIENT_CONF
 
@@ -193,7 +239,6 @@ cp /home/$USERNAME/{$VPN.$DOMEN.crt,ca.crt} /etc/openvpn/server
 rm /home/$USERNAME/{$VPN.$DOMEN.crt,ca.crt}
 #####################################################################
 #это потом должен сделать deb пакет
-cp /home/$USERNAME/nanocorpinfra/config/server.conf /etc/openvpn/server/
 sed -i "s/^cert.*/cert $VPN.$DOMEN.crt/" /etc/openvpn/server/server.conf
 sed -i "s/^key.*/key $VPN.$DOMEN.key/" /etc/openvpn/server/server.conf
 #создадим группу nobody
@@ -233,12 +278,6 @@ iptables_add FORWARD -p tcp -d 192.168.0.6 --dport 4444 -j ACCEPT
 # проброс к prometheus
 iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 9090 -j DNAT --to-destination 192.168.0.5:9090
 iptables_add FORWARD -p tcp -d 192.168.0.5 --dport 9090 -j ACCEPT
-# проброс node exporter
-iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 9100 -j DNAT --to-destination 192.168.0.5:9100
-iptables_add FORWARD -p tcp -d 192.168.0.5 --dport 9100 -j ACCEPT
-#проброс openvpn
-iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 9176 -j DNAT --to-destination 192.168.0.5:9176
-iptables_add FORWARD -p tcp -d 192.168.0.5 --dport 9176 -j ACCEPT
 
 iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 #--------------------------------------------------------------------------------------------------------
