@@ -61,7 +61,12 @@ cp /home/$USERNAME/$key /opt/prometheus/
 if ! dpkg -s apache2-utils  &> /dev/null; then
         apt-get install -y apache2-utils
 fi
-hash=$(htpasswd -nbB -C 10 admin "abkfnjd")
+
+# запросим логин и пароль для входа в мониторинг
+read -r -p $'\n\n'"login for Prometheus: " mon_login
+read -r -p "password for Prometheus: " -s mon_pass
+
+hash=$(htpasswd -nbB -C 10 "$mon_login" "$mon_pass")
 two=$(echo "$hash" | cut -d ':' -f 2)
 
 #создадим файл для настроек https
@@ -74,15 +79,16 @@ basic_auth_users:
   admin: '$two'
 EOF
 
+#проверим группу, если такой нет то создадим
 if ! getent group node_exporter &>/dev/null; then
         addgroup --system "prometheus" --quiet
 fi
-
+# проверим пользователя, если нет то создадим
 if ! getent passwd node_exporter &>/dev/null; then
         adduser --system --home /usr/share/prometheus --no-create-home --ingroup "prometheus" --disabled-password --shell /bin/false "prometheus"
 fi
 
-#становим права на файлы
+#установим права на файлы
 chown -R prometheus:prometheus /var/lib/prometheus/
 chmod -R 755 /var/lib/prometheus/
 chown -R prometheus:prometheus /etc/prometheus/
@@ -96,7 +102,7 @@ chown prometheus:prometheus /usr/bin/promtool
 chown -h prometheus:prometheus /usr/local/bin/promtool
 chmod 755 /usr/bin/promtool
 
-#создадим юнит 
+#создадим юнит Prometheus
 cat <<EOF> /etc/systemd/system/prometheus.service
 [Unit]
 Description=Prometheus
