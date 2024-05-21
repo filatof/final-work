@@ -34,7 +34,7 @@ fi
 if ! dpkg -s golang  &> /dev/null; then
 	apt-get install -y golang
 fi
-
+# скачаем пакет 
 sudo -u "$USERNAME" wget -P /home/$USERNAME/  https://github.com/kumina/openvpn_exporter/archive/refs/tags/v0.3.0.tar.gz
 sudo -u "$USERNAME" tar xvf /home/$USERNAME/v0.3.0.tar.gz -C /home/$USERNAME
 
@@ -45,23 +45,23 @@ cd /home/$USERNAME/openvpn_exporter-0.3.0
 go build main.go
 
 cp /home/$USERNAME/openvpn_exporter-0.3.0/main /usr/bin/openvpn_exporter
-
+#проверим группу, если нет то создадим ее
 if ! getent group openvpn_exporter &>/dev/null; then
         addgroup --system "openvpn_exporter" --quiet
 fi
-
+# проверим пользователя если нет то создадим его
 if ! getent passwd openvpn_exporter &>/dev/null; then
         adduser --system --home /usr/share/openvpn_exporter --no-create-home --ingroup "openvpn_exporter" --disabled-password --shell /bin/false "openvpn_exporter"
 fi
-
+# добавим рута в группу 
 usermod -a -G openvpn_exporter root
-
+# меняем права на файлы
 chgrp openvpn_exporter /var/log/openvpn/openvpn-status.log
 chmod 660 /var/log/openvpn/openvpn-status.log
 
 chown openvpn_exporter:openvpn_exporter /usr/bin/openvpn_exporter
 chmod 755 /usr/bin/openvpn_exporter
-
+#создадим юнит
 cat <<EOF> /etc/systemd/system/openvpn_exporter.service
 [Unit]
 Description=Prometheus OpenVPN Node Exporter
@@ -77,11 +77,11 @@ ExecStart=/usr/bin/openvpn_exporter
 [Install]
 WantedBy=multi-user.target
 EOF
-
+#перезапустим экспортер 
 systemctl daemon-reload
 systemctl restart openvpn_exporter.service
 systemctl enable openvpn_exporter.service
-
+#добавим правило для пропуска трафика 
 iptables -A INPUT -p tcp --dport 9176 -j ACCEPT
 service netfilter-persistent save
 
