@@ -61,7 +61,11 @@ cp /home/$USERNAME/$key /opt/node_exporter/
 if ! dpkg -s apache2-utils  &> /dev/null; then
         apt-get install -y apache2-utils
 fi
-hash=$(htpasswd -nbB -C 10 admin "abkfnjd")
+
+# запросим логин и пароль для нового репозитория
+read -r -p $'\n\n'"login for Node-exporter: " node_login
+read -r -p "password for Node-exporter: " -s node_pass
+hash=$(htpasswd -nbB -C 10 "$node_login" "$node_pass")
 two=$(echo "$hash" | cut -d ':' -f 2)
 
 #создадим файл для настроек https
@@ -82,7 +86,7 @@ if ! getent passwd node_exporter &>/dev/null; then
         adduser --system --home /usr/share/prometheus --no-create-home --ingroup "node_exporter" --disabled-password --shell /bin/false "node_exporter"
 fi
 
-
+#установим права на файлы
 chmod 755 /usr/bin/node_exporter
 chown node_exporter:node_exporter /usr/bin/node_exporter
 chmod -R 755 /opt/node_exporter/
