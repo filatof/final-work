@@ -102,8 +102,8 @@ systemctl daemon-reload
 systemctl restart nginx_exporter.service
 systemctl enable nginx_exporter.service
 
-#добавим правила для пропуска на порт 9100
-iptables -A INPUT -p tcp --dport 9113 -j ACCEPT
+#добавим правила для пропуска на порт 9113
+iptables -A INPUT -p tcp -s 192.168.0.5 --dport 9113 -j ACCEPT
 #сохраним настройки iptables
 service netfilter-persistent save
 
