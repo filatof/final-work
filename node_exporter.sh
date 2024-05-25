@@ -116,7 +116,7 @@ systemctl daemon-reload
 systemctl restart node_exporter.service
 systemctl enable node_exporter.service
 #добавим правила для пропуска на порт 9100
-iptables -A INPUT -p tcp --dport 9100 -j ACCEPT
+iptables -A INPUT -p tcp -s 192.168.0.5 --dport 9100 -j ACCEPT
 #сохраним настройки iptables
 service netfilter-persistent save
 
