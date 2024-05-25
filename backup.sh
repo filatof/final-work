@@ -7,7 +7,8 @@
 
 # Настройки
 SERVER="servername"
-SOURCE_DIR="/home/fill/"                # Путь к директории с данными
+# Массив директорий с данными
+SOURCE_DIR=("/home/fill/" "/etc/openvpn/server" "/opt/openvpn_exporter")                
 REMOTE_USER="fill"                        # Пользователь на резервном сервере
 REMOTE_SERVER="192.168.0.6"             # Имя или IP адрес резервного сервера
 REMOTE_DIR="/tmp/backup"       # Директория на резервном сервере для временного хранения данных
