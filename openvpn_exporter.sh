@@ -77,12 +77,14 @@ ExecStart=/usr/bin/openvpn_exporter
 [Install]
 WantedBy=multi-user.target
 EOF
+
 #перезапустим экспортер 
 systemctl daemon-reload
 systemctl restart openvpn_exporter.service
 systemctl enable openvpn_exporter.service
+
 #добавим правило для пропуска трафика 
-iptables -A INPUT -p tcp --dport 9176 -j ACCEPT
+iptables -A INPUT -p tcp -s 192.168.0.5 --dport 9176 -j ACCEPT
 service netfilter-persistent save
 
 
