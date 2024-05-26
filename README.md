@@ -1,6 +1,6 @@
 
 #  Финальная работа "Страт в DevOps"
-##### Репозиторий содержит скрипты для создания инфраструктуры компании. Документация доступна [здесь](https://docs.google.com/document/d/1o-Qic4NAUhTlQ7hHLct069ER_ZpC3Jw61F4lfZNinnw/edit) 
+##### Репозиторий содержит скрипты для создания инфраструктуры компании. Документация доступна [здесь](https://docs.google.com/document/d/1o-Qic4NAUhTlQ7hHLct069ER_ZpC3Jw61F4lfZNinnw/edit?usp=sharing) 
 #### Схема:
 ![Иллюстрация к проекту](https://github.com/filatof/nanocorpinfra/blob/main/images/infra.png)
 Компоненты и их взаимодействие
